@@ -301,30 +301,6 @@ bool Game::checkXHlp(int x, int y) {
 			return false ;
 		}
 	}
-	else if ((x == (boardSize - 1)) && (y >= 0)) {
-		if (y > 0){
-			if (currIndxXO == (getIndexAsXO(x, (y-1)))) {
-				return true ;
-			}
-			else if (currIndxXO == (getIndexAsXO((x-1), (y-1)))) {
-				return true ;
-			}
-		}
-		else if (y < (rowSize - 1)) {
-			if (currIndxXO == (getIndexAsXO(x, (y+1)))) {
-				return true ;
-			}
-			else if (currIndxXO == (getIndexAsXO((x-1), (y+1)))) {
-				return true ;
-			}
-		}
-		else if (currIndxXO == (getIndexAsXO((x-1), y))) {
-			return true ;
-		}
-		else {
-			return false ;
-		}
-	}
 	else if ((y == (rowSize - 1)) && (x >= 0)) {
 		if (currIndxXO == (getIndexAsXO(x, (y-1)))) {
 			return true ;
@@ -338,10 +314,10 @@ bool Game::checkXHlp(int x, int y) {
 			}
 		}
 		else if (x > 0) {
-			if (currIndxXO == (getIndexAsXO((x-1), (y-1)))) {
+			if (currIndxXO == (getIndexAsXO((x-1), y))) {
 				return true ;
 			}
-			else if (currIndxXO == (getIndexAsXO((x-1), y))) {
+			else if (currIndxXO == (getIndexAsXO((x-1), (y-1)))) {
 				return true ;
 			}
 		}
@@ -349,15 +325,25 @@ bool Game::checkXHlp(int x, int y) {
 			return false ;
 		}
 	}
-	else if (x < (boardSize - 1)) {
-		if (currIndxXO == (getIndexAsXO((x+1), y))) {
-			return checkXHlp((x+1), y);
+	else if ((x == (boardSize - 1)) && (y >= 0)) {
+		if (currIndxXO == (getIndexAsXO((x-1), y))) {
+			return true ;
 		}
-		else if (currIndxXO == (getIndexAsXO(x, (y-1)))) {
-			return checkXHlp(x, (y-1)) ;
+		else if (y < (rowSize - 1)) {
+			if (currIndxXO == (getIndexAsXO(x, (y+1)))) {
+				return true ;
+			}
+			else if (currIndxXO == (getIndexAsXO((x-1), (y+1)))) {
+				return true ;
+			}
 		}
-		else if (currIndxXO == (getIndexAsXO((x+1), (y-1)))) {
-			return checkXHlp((x+1), (y-1)) ;
+		else if (y > 0){
+			if (currIndxXO == (getIndexAsXO(x, (y-1)))) {
+				return true ;
+			}
+			else if (currIndxXO == (getIndexAsXO((x-1), (y-1)))) {
+				return true ;
+			}
 		}
 		else {
 			return false ;
@@ -372,6 +358,21 @@ bool Game::checkXHlp(int x, int y) {
 		}
 		else if (currIndxXO == (getIndexAsXO((x-1), (y+1)))) {
 			return checkXHlp((x-1), (y+1)) ;
+		}
+		else {
+			return false ;
+		}
+	}
+	else if (x < (boardSize - 1)) {
+		if (currIndxXO == (getIndexAsXO(x, (y-1)))) {
+			return checkXHlp(x, (y-1)) ;
+		}
+		else if (currIndxXO == (getIndexAsXO((x+1), y))) {
+			return checkXHlp((x+1), y);
+		}
+		
+		else if (currIndxXO == (getIndexAsXO((x+1), (y-1)))) {
+			return checkXHlp((x+1), (y-1)) ;
 		}
 		else {
 			return false ;
