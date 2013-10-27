@@ -26,6 +26,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		661E8701181D09C500A1C419 /* SmartXO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SmartXO.h; sourceTree = "<group>"; };
 		665D9768181BE3AC008F86D5 /* TicTacToe */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TicTacToe; sourceTree = BUILT_PRODUCTS_DIR; };
 		665D976D181BE3AC008F86D5 /* TicTacToe.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = TicTacToe.1; sourceTree = "<group>"; };
 		665D9774181BE424008F86D5 /* Game.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Game.h; sourceTree = "<group>"; };
@@ -71,6 +72,7 @@
 				665D9777181BE424008F86D5 /* Game.cpp */,
 				665D9778181BE424008F86D5 /* main.cpp */,
 				665D976D181BE3AC008F86D5 /* TicTacToe.1 */,
+				661E8701181D09C500A1C419 /* SmartXO.h */,
 			);
 			path = TicTacToe;
 			sourceTree = "<group>";
@@ -235,6 +237,7 @@
 				665D9773181BE3AC008F86D5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
