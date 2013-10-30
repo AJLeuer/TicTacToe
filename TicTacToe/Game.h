@@ -13,6 +13,7 @@
 #include "Player.h"
 #include "XO.h"
 #include "SmartXO.h"
+#include "stdafx.h"
 
 #ifndef TicTacToe_Game_h
 #define TicTacToe_Game_h
@@ -20,20 +21,20 @@
 using namespace std ;
 
 
-class Game  {
+class Game : public Player, public SmartXO {
     
-private:
-    XO board[3][3] ;
+protected:
+    SmartXO* board[3][3] ;
 	int boardSize ;
     int rowSize ;
     
     Player *player0 ; //in some cases our player will be human, in others ai
     Player *player1 ;
-   
+	
 	Player *currentPlayer ; //points to whichever player object has this turn
 	Player *nextPlayer ;
 	Player *tempPlayer ; //points to a player temporarily
-	Player *winPlayer = nullptr ; //obviously null to begin with
+	Player *winPlayer ; //obviously null to begin with
 	
 	int gamesPlayed ;
 	int gpCounter ;
@@ -45,7 +46,7 @@ private:
     bool player0IsX ;
     
     bool started ; //never assign started directly
-	bool winner = false ;
+	bool winner ;
 	bool gameOver ; //an extra flag to help functions decide behavior based on game state, differs from completed in that it signifies the time period between the end of one game and the beginning of the next
 	
     bool checkStarted() ;
@@ -53,18 +54,20 @@ private:
 	void setStarted(bool) ; //always use - never assign started directly
 	
 	/*Flag to check if writeIndex() and playerAction() are working as intended
-	0 if not previously written (write accepted)
-	1 if previously written - unwritable index
-	2 if all indices written - game over (we can get this more directly from checkComplete())
-	If still at 3 then assignement to plyrActnCheck is not working correctly, we will throw an exception */
-	int plyrActnCheck = 3 ;
+	 0 if not previously written (write accepted)
+	 1 if previously written - unwritable index
+	 2 if all indices written - game over (we can get this more directly from checkComplete())
+	 If still at 3 then assignement to plyrActnCheck is not working correctly, we will throw an exception */
+	int plyrActnCheck ;
 	
 	void writeAllIndex(XO) ;
 	void resetGame() ; //cleans the game board, resets members, etc.
 	
 	void checkWin() ;
-	bool checkAcross() ;
-	bool checkXHlp(int, int) ; //checkAcross helper function
+	bool checkLocations() ;
+	bool findPattern(Location, vector<Location>*, direction, int, int, int) ; //takes a direction in which to recursively search for a straight line of Xs or Os
+	
+	
 	
 public:
     Game() ;
@@ -86,13 +89,22 @@ public:
     
     void wipeGame() ; //resets each space on the board
     
-    string toString() ; //returns game state as a string
-    string getGameLog() ;
-    string getAllLogs() ;
+    std::string toString() ; //returns game state as a string
+    std::string getGameLog() ;
+    std::string getAllLogs() ;
     void printGameState() ;
 	
-	bool compXO(XO, XO) ;
-    
+} ;
+
+enum direction {
+	up,
+	down,
+	right,
+	left,
+	upright,
+	upleft,
+	downright,
+	downleft
 } ;
 
 

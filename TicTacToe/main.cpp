@@ -17,6 +17,7 @@ using namespace std ;
 
 int main(int argc, const char * argv[]) {
 	
+	
     Game *g = new Game(false, "Adam") ;
     g->playSimGame() ;
     cout << g->getGameLog() << endl ;
@@ -25,6 +26,7 @@ int main(int argc, const char * argv[]) {
 	
 	g->playSimGame() ;
     cout << g->getGameLog() << endl ;
+	
 	
 	 
 

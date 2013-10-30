@@ -6,48 +6,48 @@
 //  Copyright (c) 2013 Adam James Leuer. All rights reserved.
 //
 
+#include "XO.h"
+#include "stdafx.h"
+
 #ifndef TicTacToe_SmartXO_h
 #define TicTacToe_SmartXO_h
 
-#include "XO.h"
+using namespace std ;
 
-struct location {
+struct Location {
 	int x, y ;
-	int id ;
 } ;
 
 class SmartXO {
 	
-private:
-	static vector<int> database ;
+protected:
+	static int count ;
+	static int iDs ;
+	static vector<SmartXO*> xDatabase ;
+	static vector<SmartXO*> oDatabase ;
+	
 	
 	XO xo ;
 	int id ;
-	location xoLocation ;
+	Location location ;
 	
-	void setLocation(int, int) ;
-	void getLocation() ;
+	
+	bool compXO(XO, XO) ;
 	
 public:
-	SmartXO(XO) ;
+	SmartXO() ;
+	SmartXO(XO, int, int) ;
 	void scanNearby() ;
+	void operator=(XO) ;
+	
+	Location getLocation() ;
+	int getID() ;
+	XO getXO() ;
+	
+	vector<Location>* getSTypeL() ; //returns array of locations of smartXO objects same XO type (not including blank) as this
 	
 	
 } ;
-
-class SmartXOBoard : public SmartXO {
-private:
-	int getNum() ;
-	SmartXO board[3][3] ;
-
-public:
-	void addAtIndx(int, int) ;
-	
-	
-};
-
-
-
 
 
 #endif

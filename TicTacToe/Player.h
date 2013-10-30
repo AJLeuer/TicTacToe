@@ -7,6 +7,7 @@
 //
 
 #include "XO.h"
+#include "SmartXO.h"
 
 #ifndef TicTacToe_Player_h
 #define TicTacToe_Player_h
@@ -19,9 +20,10 @@ struct Player {
 public:
     Player() {} ;
     string name ;
-    XO xorO ;
+    SmartXO xorO ;
     
-	char getXO() { return (char)xorO ; }
+	char getXOChar() { return (char)(xorO.getXO()) ; }
+	XO getXO() { return (xorO.getXO()) ; }
     
 };
 

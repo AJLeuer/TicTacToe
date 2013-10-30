@@ -11,6 +11,7 @@
 		665D976E181BE3AC008F86D5 /* TicTacToe.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 665D976D181BE3AC008F86D5 /* TicTacToe.1 */; };
 		665D9779181BE424008F86D5 /* Game.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 665D9777181BE424008F86D5 /* Game.cpp */; };
 		665D977A181BE424008F86D5 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 665D9778181BE424008F86D5 /* main.cpp */; };
+		66DEF99C18218F8800CCDF18 /* SmartXO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66DEF99B18218F8800CCDF18 /* SmartXO.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -37,6 +38,7 @@
 		665D9776181BE424008F86D5 /* XO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XO.h; sourceTree = "<group>"; };
 		665D9777181BE424008F86D5 /* Game.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Game.cpp; sourceTree = "<group>"; };
 		665D9778181BE424008F86D5 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		66DEF99B18218F8800CCDF18 /* SmartXO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SmartXO.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +80,7 @@
 				665D9778181BE424008F86D5 /* main.cpp */,
 				665D976D181BE3AC008F86D5 /* TicTacToe.1 */,
 				661E8701181D09C500A1C419 /* SmartXO.h */,
+				66DEF99B18218F8800CCDF18 /* SmartXO.cpp */,
 			);
 			path = TicTacToe;
 			sourceTree = "<group>";
@@ -135,6 +138,7 @@
 			files = (
 				665D977A181BE424008F86D5 /* main.cpp in Sources */,
 				661E8704181D0F7C00A1C419 /* SmartXO.cpp in Sources */,
+				66DEF99C18218F8800CCDF18 /* SmartXO.cpp in Sources */,
 				665D9779181BE424008F86D5 /* Game.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
