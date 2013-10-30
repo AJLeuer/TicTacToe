@@ -11,6 +11,11 @@
 
 #include "XO.h"
 
+struct location {
+	int x, y ;
+	int id ;
+} ;
+
 class SmartXO {
 	
 private:
@@ -18,15 +23,30 @@ private:
 	
 	XO xo ;
 	int id ;
+	location xoLocation ;
+	
+	void setLocation(int, int) ;
+	void getLocation() ;
 	
 public:
+	SmartXO(XO) ;
 	void scanNearby() ;
+	
 	
 } ;
 
 class SmartXOBoard : public SmartXO {
+private:
+	int getNum() ;
+	SmartXO board[3][3] ;
+
+public:
+	void addAtIndx(int, int) ;
+	
 	
 };
+
+
 
 
 

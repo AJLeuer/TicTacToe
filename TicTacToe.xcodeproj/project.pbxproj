@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		661E8704181D0F7C00A1C419 /* SmartXO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 661E8702181D0F7C00A1C419 /* SmartXO.cpp */; };
 		665D976E181BE3AC008F86D5 /* TicTacToe.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 665D976D181BE3AC008F86D5 /* TicTacToe.1 */; };
 		665D9779181BE424008F86D5 /* Game.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 665D9777181BE424008F86D5 /* Game.cpp */; };
 		665D977A181BE424008F86D5 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 665D9778181BE424008F86D5 /* main.cpp */; };
@@ -27,6 +28,8 @@
 
 /* Begin PBXFileReference section */
 		661E8701181D09C500A1C419 /* SmartXO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SmartXO.h; sourceTree = "<group>"; };
+		661E8702181D0F7C00A1C419 /* SmartXO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SmartXO.cpp; sourceTree = "<group>"; };
+		661E8703181D0F7C00A1C419 /* SmartXO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SmartXO.h; sourceTree = "<group>"; };
 		665D9768181BE3AC008F86D5 /* TicTacToe */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TicTacToe; sourceTree = BUILT_PRODUCTS_DIR; };
 		665D976D181BE3AC008F86D5 /* TicTacToe.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = TicTacToe.1; sourceTree = "<group>"; };
 		665D9774181BE424008F86D5 /* Game.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Game.h; sourceTree = "<group>"; };
@@ -50,6 +53,8 @@
 		665D975F181BE3AC008F86D5 = {
 			isa = PBXGroup;
 			children = (
+				661E8702181D0F7C00A1C419 /* SmartXO.cpp */,
+				661E8703181D0F7C00A1C419 /* SmartXO.h */,
 				665D976A181BE3AC008F86D5 /* TicTacToe */,
 				665D9769181BE3AC008F86D5 /* Products */,
 			);
@@ -129,6 +134,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				665D977A181BE424008F86D5 /* main.cpp in Sources */,
+				661E8704181D0F7C00A1C419 /* SmartXO.cpp in Sources */,
 				665D9779181BE424008F86D5 /* Game.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

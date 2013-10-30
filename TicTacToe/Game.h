@@ -12,6 +12,7 @@
 
 #include "Player.h"
 #include "XO.h"
+#include "SmartXO.h"
 
 #ifndef TicTacToe_Game_h
 #define TicTacToe_Game_h
