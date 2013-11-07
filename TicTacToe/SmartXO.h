@@ -7,6 +7,8 @@
 //
 
 #include <vector>
+#include <iterator>
+
 #include "XO.h"
 
 
@@ -14,6 +16,8 @@
 #define TicTacToe_SmartXO_h
 
 using namespace std ;
+
+extern unsigned int iDs ;
 
 class Location {
 public:
@@ -24,11 +28,6 @@ public:
 class SmartXO {
 	
 protected:
-	static int count ;
-	static int iDs ;
-	static vector<SmartXO*> xDatabase ;
-	static vector<SmartXO*> oDatabase ;
-	
 	
 	XO xo ;
 	int id ;
@@ -40,17 +39,21 @@ protected:
 public:
 	SmartXO() ;
 	SmartXO(XO, int, int) ;
+	void cleanDB() ; //deletes changed XOs from its database (x or o)
 	void scanNearby() ;
 	void operator=(XO) ;
 	
 	Location getLocation() ;
 	int getID() ;
 	XO getXO() ;
+	static char getXOChar(XO) ;
 	
 	vector<Location>* getAllXOType() ; //returns array of locations of smartXO objects same XO type (not including blank) as this
 	
-	
 } ;
+
+extern vector<SmartXO*> xDatabase ;
+extern vector<SmartXO*> oDatabase ;
 
 
 #endif

@@ -20,10 +20,10 @@ struct Player {
 public:
     Player() {} ;
     string name ;
-    SmartXO xorO ;
+	XO xorO ;
     
-	char getXOChar() { return (char)(xorO.getXO()) ; }
-	XO getXO() { return (xorO.getXO()) ; }
+	char getXOChar() { return SmartXO::getXOChar(xorO); }
+	XO getXO() { return xorO ; }
     
 };
 

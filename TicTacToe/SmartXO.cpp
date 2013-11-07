@@ -1,5 +1,7 @@
+#include <iterator>
 
 #include "SmartXO.h"
+
 
 using namespace std ;
 
@@ -8,22 +10,24 @@ Location::Location() {
 	y = 0 ;
 }
 
-int SmartXO::count = 0 ;
-int SmartXO::iDs = 0 ;
-vector<SmartXO*> SmartXO::xDatabase = vector<SmartXO*>() ;
-vector<SmartXO*> SmartXO::oDatabase = vector<SmartXO*>() ;
+
+unsigned iDs = 0 ;
+
+vector<SmartXO*> xDatabase = vector<SmartXO*>() ;
+vector<SmartXO*> oDatabase = vector<SmartXO*>() ;
 
 SmartXO::SmartXO() {
-	;
+	this->xo = blank ;
+	this->location.x = -500 ;
+	this->location.y = -500 ;
 }
 
 SmartXO::SmartXO(XO xorO, int xloc, int yloc) {
 	(this->xo) = xorO ;
-	id = iDs ;
+	id = (iDs++) ;
 	this->location.x = xloc ;
 	this->location.y = yloc ;
 	
-	iDs++ ;
 	SmartXO *sxop = this ;
 	if(this->getXO() == X) {
 		xDatabase.push_back(sxop) ;
@@ -31,9 +35,35 @@ SmartXO::SmartXO(XO xorO, int xloc, int yloc) {
 	else if(this->getXO() == O) {
 		oDatabase.push_back(sxop) ;
 	}
+	cleanDB() ;
 }
 
+void SmartXO::cleanDB() {
+	
+	vector<SmartXO*>::iterator itr = xDatabase.begin();
+	while(itr != xDatabase.end()) {
+		if (((itr.operator*())->getXO()) != X) {
+			itr = xDatabase.erase(itr) ;
+		}
+		else {
+			itr++ ;
+		}
+	}
+	
+	itr = oDatabase.begin();
+	while(itr != oDatabase.end()) {
+		if (((itr.operator*())->getXO()) != O) {
+			itr = oDatabase.erase(itr) ;
+		}
+		else {
+			itr++ ;
+		}
+	}
+}
+
+
 void SmartXO::operator=(XO xorO) {
+	
 	(this->xo) = xorO ;
 	SmartXO *sxop = this ;
 	if(this->getXO() == X) {
@@ -42,6 +72,8 @@ void SmartXO::operator=(XO xorO) {
 	else if(this->getXO() == O) {
 		oDatabase.push_back(sxop) ;
 	}
+	cleanDB() ;
+	
 }
 
 
@@ -72,29 +104,34 @@ XO SmartXO::getXO() {
 	return xo ;
 }
 
+char SmartXO::getXOChar(XO xO) {
+	SmartXO* Xo = new SmartXO(xO, -499, -499) ;
+	return (char)(Xo->getXO()) ;
+}
+
 vector<Location>* SmartXO::getAllXOType() {
-	XO xo = this->getXO() ;
 	
-	if (xo == X) {
+	//cleanDB() ;
+	
+	XO txo = this->getXO() ;
+
+	if (txo == X) {
 		vector<Location>* xlocs = new vector<Location> ;
 		for(vector<SmartXO*>::size_type i = 0 ; i < xDatabase.size() ; i++) {
 			Location dbLoc = (xDatabase.at(i))->getLocation() ;
-			if (((dbLoc.x) == (this->getLocation().x)) && ((dbLoc.y) == (this->getLocation().y))) {
-				xlocs->push_back(dbLoc) ;
-			}
-			
+			xlocs->push_back(dbLoc) ;
 		}
 		return xlocs ;
 	}
-	else if (xo == O) {
+	
+	else if (txo == O) {
 		vector<Location>* olocs = new vector<Location> ;
 		for(vector<SmartXO*>::size_type i = 0 ; i < oDatabase.size() ; i++) {
 			Location dbLoc = (oDatabase.at(i))->getLocation() ;
-			if (((dbLoc.x) == (this->getLocation().x)) && ((dbLoc.y) == (this->getLocation().y))) {
-				olocs->push_back(dbLoc) ;
-			}
+			olocs->push_back(dbLoc) ;
 		}
 		return olocs ;
 	}
-	return nullptr;
+	
+	return nullptr ;
 }
