@@ -1,7 +1,12 @@
-#include "stdafx.h"
+
 #include "SmartXO.h"
 
 using namespace std ;
+
+Location::Location() {
+	x = 0 ;
+	y = 0 ;
+}
 
 int SmartXO::count = 0 ;
 int SmartXO::iDs = 0 ;
@@ -60,7 +65,7 @@ XO SmartXO::getXO() {
 	return xo ;
 }
 
-vector<Location>* SmartXO::getSTypeL() {
+vector<Location>* SmartXO::getAllXOType() {
 	if (this->getXO() == X) {
 		vector<Location>* xlocs = new vector<Location>() ;
 		for(unsigned int i = 0 ; i < xDatabase.size() ; i++) {

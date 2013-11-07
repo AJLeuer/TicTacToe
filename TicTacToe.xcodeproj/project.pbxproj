@@ -7,11 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		661E8704181D0F7C00A1C419 /* SmartXO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 661E8702181D0F7C00A1C419 /* SmartXO.cpp */; };
 		665D976E181BE3AC008F86D5 /* TicTacToe.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 665D976D181BE3AC008F86D5 /* TicTacToe.1 */; };
-		665D9779181BE424008F86D5 /* Game.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 665D9777181BE424008F86D5 /* Game.cpp */; };
-		665D977A181BE424008F86D5 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 665D9778181BE424008F86D5 /* main.cpp */; };
-		66DEF99C18218F8800CCDF18 /* SmartXO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66DEF99B18218F8800CCDF18 /* SmartXO.cpp */; };
+		66B0C2A4182B38D200ECB2B7 /* Game.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66B0C2A1182B38D200ECB2B7 /* Game.cpp */; };
+		66B0C2A5182B38D200ECB2B7 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66B0C2A2182B38D200ECB2B7 /* main.cpp */; };
+		66B0C2A6182B38D200ECB2B7 /* SmartXO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66B0C2A3182B38D200ECB2B7 /* SmartXO.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,17 +27,15 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		661E8701181D09C500A1C419 /* SmartXO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SmartXO.h; sourceTree = "<group>"; };
-		661E8702181D0F7C00A1C419 /* SmartXO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SmartXO.cpp; sourceTree = "<group>"; };
-		661E8703181D0F7C00A1C419 /* SmartXO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SmartXO.h; sourceTree = "<group>"; };
 		665D9768181BE3AC008F86D5 /* TicTacToe */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TicTacToe; sourceTree = BUILT_PRODUCTS_DIR; };
 		665D976D181BE3AC008F86D5 /* TicTacToe.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = TicTacToe.1; sourceTree = "<group>"; };
-		665D9774181BE424008F86D5 /* Game.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Game.h; sourceTree = "<group>"; };
-		665D9775181BE424008F86D5 /* Player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Player.h; sourceTree = "<group>"; };
-		665D9776181BE424008F86D5 /* XO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XO.h; sourceTree = "<group>"; };
-		665D9777181BE424008F86D5 /* Game.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Game.cpp; sourceTree = "<group>"; };
-		665D9778181BE424008F86D5 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		66DEF99B18218F8800CCDF18 /* SmartXO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SmartXO.cpp; sourceTree = "<group>"; };
+		66B0C29D182B38D200ECB2B7 /* Game.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Game.h; sourceTree = "<group>"; };
+		66B0C29E182B38D200ECB2B7 /* Player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Player.h; sourceTree = "<group>"; };
+		66B0C29F182B38D200ECB2B7 /* SmartXO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SmartXO.h; sourceTree = "<group>"; };
+		66B0C2A0182B38D200ECB2B7 /* XO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XO.h; sourceTree = "<group>"; };
+		66B0C2A1182B38D200ECB2B7 /* Game.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Game.cpp; sourceTree = "<group>"; };
+		66B0C2A2182B38D200ECB2B7 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		66B0C2A3182B38D200ECB2B7 /* SmartXO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SmartXO.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,8 +52,6 @@
 		665D975F181BE3AC008F86D5 = {
 			isa = PBXGroup;
 			children = (
-				661E8702181D0F7C00A1C419 /* SmartXO.cpp */,
-				661E8703181D0F7C00A1C419 /* SmartXO.h */,
 				665D976A181BE3AC008F86D5 /* TicTacToe */,
 				665D9769181BE3AC008F86D5 /* Products */,
 			);
@@ -73,14 +68,14 @@
 		665D976A181BE3AC008F86D5 /* TicTacToe */ = {
 			isa = PBXGroup;
 			children = (
-				665D9774181BE424008F86D5 /* Game.h */,
-				665D9775181BE424008F86D5 /* Player.h */,
-				665D9776181BE424008F86D5 /* XO.h */,
-				665D9777181BE424008F86D5 /* Game.cpp */,
-				665D9778181BE424008F86D5 /* main.cpp */,
+				66B0C29D182B38D200ECB2B7 /* Game.h */,
+				66B0C29E182B38D200ECB2B7 /* Player.h */,
+				66B0C29F182B38D200ECB2B7 /* SmartXO.h */,
+				66B0C2A0182B38D200ECB2B7 /* XO.h */,
+				66B0C2A1182B38D200ECB2B7 /* Game.cpp */,
+				66B0C2A2182B38D200ECB2B7 /* main.cpp */,
+				66B0C2A3182B38D200ECB2B7 /* SmartXO.cpp */,
 				665D976D181BE3AC008F86D5 /* TicTacToe.1 */,
-				661E8701181D09C500A1C419 /* SmartXO.h */,
-				66DEF99B18218F8800CCDF18 /* SmartXO.cpp */,
 			);
 			path = TicTacToe;
 			sourceTree = "<group>";
@@ -136,10 +131,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				665D977A181BE424008F86D5 /* main.cpp in Sources */,
-				661E8704181D0F7C00A1C419 /* SmartXO.cpp in Sources */,
-				66DEF99C18218F8800CCDF18 /* SmartXO.cpp in Sources */,
-				665D9779181BE424008F86D5 /* Game.cpp in Sources */,
+				66B0C2A5182B38D200ECB2B7 /* main.cpp in Sources */,
+				66B0C2A6182B38D200ECB2B7 /* SmartXO.cpp in Sources */,
+				66B0C2A4182B38D200ECB2B7 /* Game.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

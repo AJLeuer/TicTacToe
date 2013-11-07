@@ -13,12 +13,23 @@
 #include "Player.h"
 #include "XO.h"
 #include "SmartXO.h"
-#include "stdafx.h"
 
 #ifndef TicTacToe_Game_h
 #define TicTacToe_Game_h
 
 using namespace std ;
+
+enum direction {
+    null,
+	up,
+	down,
+	right,
+	left,
+	upRight,
+	upLeft,
+	downRight,
+	downLeft
+} ;
 
 
 class Game : public Player, public SmartXO {
@@ -65,7 +76,8 @@ protected:
 	
 	void checkWin() ;
 	bool checkLocations() ;
-	bool findPattern(Location, vector<Location>*, direction, int, int, int) ; //takes a direction in which to recursively search for a straight line of Xs or Os
+	bool findPattern(Location, vector<Location>*, direction, int) ; //takes a direction in which to recursively search for a straight line of Xs or Os
+	Location* locSearch(Location, vector<Location>*, int, int) ; //searches through vector of locations to find any that are 1 unit away
 	
 	
 	
@@ -96,16 +108,7 @@ public:
 	
 } ;
 
-enum direction {
-	up,
-	down,
-	right,
-	left,
-	upright,
-	upleft,
-	downright,
-	downleft
-} ;
+
 
 
 

@@ -11,7 +11,6 @@
 #include <time.h>
 
 #include "Game.h"
-#include "stdafx.h"
 
 using namespace std ;
 
@@ -197,26 +196,25 @@ void Game::nextGameEvent(int x, int y) {
 			*currentGameLog << player1->name <<  " is " << player1->getXO() << "." << endl ;
 			*currentGameLog << currentPlayer->name << " goes first!" << endl ;
 		}
-		else
-		*currentGameLog << "Since " << currentPlayer->name << " won last, " << currentPlayer->name << " goes first!" << endl ;
+		else {
+			*currentGameLog << "Since " << currentPlayer->name << " won last, " << currentPlayer->name << " goes first!" << endl ;
+		}
 		*currentGameLog << nextPlayer->name << " goes second!" << endl << endl <<endl ;
     }
 	playerAction(x, y) ;
 	
-	
 	checkWin() ;
 	
 	if ((plyrActnCheck == 0) && (!(winner == true)))
-	*currentGameLog << toString() << endl << endl  ;
+		*currentGameLog << toString() << endl << endl  ;
 	else if (plyrActnCheck== 1)
-	;
+		;
 	else if (plyrActnCheck == 3) {
-		cout << "Problem with playerAction() function. Adam can debug" << endl ;
+		cout << "Problem with playerAction() function. debug" << endl ;
 		throw new exception() ;
 	}
 	if ((plyrActnCheck == 2) || (winner == true)) {
 		*currentGameLog << toString() << endl << endl  ;
-		
 		*currentGameLog << winPlayer->name << " wins! Game over!" << endl << endl ;
 		resetGame() ;
 	}
@@ -235,6 +233,7 @@ void Game::playSimGame() {
 
 void Game::playGameRtime() {
 	currentGameLog = &cout ;
+	//todo implement
 	//code
 }
 
@@ -270,37 +269,104 @@ string Game::getGameLog() {
 }
 
 void Game::checkWin() {
-	bool won = checkAcross() ;
-	
+	bool won = checkLocations() ;
 	winPlayer = player0 ;
 	winner = won ;
-	
-	
 }
 
 bool Game::checkLocations() {
-	for (int i = 0 ; i < boardSize ; i++) {
-		for (int j = 0 ; j < rowSize ; j++ ) {
-			if (((board[i][j])->getSTypeL()) != nullptr) {
-				Location here = board[i][j]->getLocation() ;
-				vector<Location> *elsewhere = board[i][j]->getSTypeL() ;
-				findPattern(here, elsewhere, direction::right, i, j, 0) ;
-				cout << (board[i][j])->getSTypeL()->back().x << endl ;
+	bool ret = false ;
+    for (int i = 0 ; i < boardSize ; i++) {
+		if (((board[i][0])->getXO()) != blank) {
+			if (((board[i][0])->getAllXOType()) != nullptr) {
+				Location here = (board[i][0])->getLocation() ;
+				vector<Location> *elsewhere = board[i][0]->getAllXOType() ;
+				ret = findPattern(here, elsewhere, direction::null, 0) ;
+				if (ret == true) {
+					return ret ;
+				}
 			}
+		}
+    }
+	for (int i = 0 ; i < rowSize ; i++) {
+		if (((board[0][i])->getXO()) != blank) {
+			if (((board[0][i])->getAllXOType()) != nullptr) {
+				Location here = (board[0][i])->getLocation() ;
+				vector<Location> *elsewhere = board[0][i]->getAllXOType() ;
+				ret = findPattern(here, elsewhere, direction::null, 0) ;
+				if (ret == true) {
+					return ret ;
+				}
+			}
+		}
+    }
+	return ret ;
+}
+
+bool Game::findPattern(Location here, vector<Location>* elseWhere, direction d, int chainSize) {
+    if (chainSize >= boardSize) {
+        return true ;
+    }
+	if ((d = direction::null) || (d = direction::right)) { // then search right next...
+		Location *loc = (locSearch(here, elseWhere, 1, 0)) ;
+		if (loc != nullptr) {
+			return findPattern(*loc, elseWhere, direction::right, (chainSize + 1)) ;
+		}
+	}
+	else if ((d = direction::null) || (d = direction::left)) { // then search right next...
+		Location *loc = (locSearch(here, elseWhere, -1, 0)) ;
+		if (loc != nullptr) {
+			return findPattern(*loc, elseWhere, direction::left, (chainSize + 1)) ;
+		}
+	}
+	else if ((d = direction::null) || (d = direction::up)) { // then search right next...
+		Location *loc = (locSearch(here, elseWhere, 0, -1)) ;
+		if (loc != nullptr) {
+			return findPattern(*loc, elseWhere, direction::up, (chainSize + 1)) ;
+		}
+	}
+	else if ((d = direction::null) || (d = direction::down)) { // then search right next...
+		Location *loc = (locSearch(here, elseWhere, 0, 1)) ;
+		if (loc != nullptr) {
+			return findPattern(*loc, elseWhere, direction::down, (chainSize + 1)) ;
+		}
+	}
+	else if ((d = direction::null) || (d = direction::upRight)) { // then search right next...
+		Location *loc = (locSearch(here, elseWhere, 1, -1)) ;
+		if (loc != nullptr) {
+			return findPattern(*loc, elseWhere, direction::upRight, (chainSize + 1)) ;
+		}
+	}
+	else if ((d = direction::null) || (d = direction::upLeft)) { // then search right next...
+		Location *loc = (locSearch(here, elseWhere, -1, -1)) ;
+		if (loc != nullptr) {
+			return findPattern(*loc, elseWhere, direction::upLeft, (chainSize + 1)) ;
+		}
+	}
+	else if ((d = direction::null) || (d = direction::downRight)) { // then search right next...
+		Location *loc = (locSearch(here, elseWhere, 1, 1)) ;
+		if (loc != nullptr) {
+			return findPattern(*loc, elseWhere, direction::downRight, (chainSize + 1)) ;
+		}
+	}
+	else if ((d = direction::null) || (d = direction::downLeft)) { // then search right next...
+		Location *loc = (locSearch(here, elseWhere, -1, 1)) ;
+		if (loc != nullptr) {
+			return findPattern(*loc, elseWhere, direction::downLeft, (chainSize + 1)) ;
 		}
 	}
 	return false ;
 }
 
-bool Game::findPattern(Location here, vector<Location>* elseWhere, direction d, int x, int y, int i) {
-	if (i < elseWhere->size()) {
-		if(((elseWhere->at(i).x) == (here.x + 1)) && ((elseWhere->at(i).y) == (here.y)))
-		
-		
+Location* Game::locSearch(Location here, vector<Location>* elseWhere, int x_offset, int y_offset) {
+	Location *loc = nullptr ;
+	for (vector<Location>::size_type i = 0 ; i < elseWhere->size() ; i++) {
+		if(((elseWhere->at(i).x) == (here.x + x_offset)) && ((elseWhere->at(i).y) == (here.y + y_offset))) {
+			loc = &(elseWhere->at(i)) ;
+		}
 	}
-	
+	return loc ;
 }
-
 
 
 

@@ -6,16 +6,19 @@
 //  Copyright (c) 2013 Adam James Leuer. All rights reserved.
 //
 
+#include <vector>
 #include "XO.h"
-#include "stdafx.h"
+
 
 #ifndef TicTacToe_SmartXO_h
 #define TicTacToe_SmartXO_h
 
 using namespace std ;
 
-struct Location {
+class Location {
+public:
 	int x, y ;
+	Location();
 } ;
 
 class SmartXO {
@@ -44,7 +47,7 @@ public:
 	int getID() ;
 	XO getXO() ;
 	
-	vector<Location>* getSTypeL() ; //returns array of locations of smartXO objects same XO type (not including blank) as this
+	vector<Location>* getAllXOType() ; //returns array of locations of smartXO objects same XO type (not including blank) as this
 	
 	
 } ;
