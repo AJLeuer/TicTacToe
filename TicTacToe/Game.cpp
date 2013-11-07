@@ -17,7 +17,7 @@ using namespace std ;
 Game::Game() { //best for ai v ai
     srand((unsigned)time(NULL)) ;
 	winner = false ;
-	plyrActnCheck = 3 ;
+	plyrActnCode = 3 ;
 	gamesPlayed = 0 ;
 	boardSize = sizeof(board)/sizeof(board[0]) ;
     rowSize = sizeof(board[0])/sizeof(board[0][0]) ;
@@ -34,7 +34,7 @@ Game::Game() { //best for ai v ai
 Game::Game(bool player0WantsX, string p0Name) { //p v ai
     srand((unsigned)time(NULL)) ;
 	winner = false ;
-	plyrActnCheck = 3 ;
+	plyrActnCode = 3 ;
 	gamesPlayed = 0 ;
 	boardSize = sizeof(board)/sizeof(board[0]) ;
     rowSize = sizeof(board[0])/sizeof(board[0][0]) ;
@@ -51,7 +51,7 @@ Game::Game(bool player0WantsX, string p0Name) { //p v ai
 Game::Game(bool player0WantsX, string p0Name, string p1Name) { //pvp
     srand((unsigned)time(NULL)) ;
 	winner = false ;
-	plyrActnCheck = 3 ;
+	plyrActnCode = 3 ;
 	gamesPlayed = 0 ;
 	boardSize = sizeof(board)/sizeof(board[0]) ;
     rowSize = sizeof(board[0])/sizeof(board[0][0]) ;
@@ -154,10 +154,9 @@ void Game::writeAllIndex(XO xorO) {
 
 void Game::resetGame() {
 	gamesPlayed++ ;
-	setStarted(false) ;
+	setStarted(false) ; //will set gameOver state as well
 	winner = false ;
-	gameOver = true ; //setting = true means resetting in this case
-	plyrActnCheck = 3 ;
+	plyrActnCode = 3 ;
 	writeAllIndex(blank) ;
 	if (winPlayer == player0) {
 		currentPlayer = player0 ;
@@ -172,18 +171,18 @@ void Game::resetGame() {
 
 void Game::playerAction(int x, int y) {
     if (checkSetCompleted())
-	plyrActnCheck = 2 ;
+	plyrActnCode = 2 ;
 	else if (isWritten(x, y))
-	plyrActnCheck = 1 ;
+	plyrActnCode = 1 ;
 	else if (!(isWritten(x, y))){
 		writeIndex(x, y, currentPlayer->getXO()) ;
 		tempPlayer = currentPlayer ;
 		currentPlayer = nextPlayer ;
 		nextPlayer = tempPlayer ;
 		if (checkSetCompleted())
-		plyrActnCheck = 2 ; //should end this game
+		plyrActnCode = 2 ; //should end this game
 		else
-		plyrActnCheck = 0 ;
+		plyrActnCode = 0 ;
 	}
 }
 
@@ -205,15 +204,15 @@ void Game::nextGameEvent(int x, int y) {
 	
 	checkWin() ;
 	
-	if ((plyrActnCheck == 0) && (!(winner == true)))
+	if ((plyrActnCode == 0) && (!(winner == true)))
 		*currentGameLog << toString() << endl << endl  ;
-	else if (plyrActnCheck== 1)
+	else if (plyrActnCode== 1)
 		;
-	else if (plyrActnCheck == 3) {
+	else if (plyrActnCode == 3) {
 		cout << "Problem with playerAction() function. debug" << endl ;
 		throw new exception() ;
 	}
-	if ((plyrActnCheck == 2) || (winner == true)) {
+	if ((plyrActnCode == 2) || (winner == true)) {
 		*currentGameLog << toString() << endl << endl  ;
 		*currentGameLog << winPlayer->name << " wins! Game over!" << endl << endl ;
 		resetGame() ;
@@ -280,7 +279,8 @@ bool Game::checkLocations() {
 		if (((board[i][0])->getXO()) != blank) {
 			if (((board[i][0])->getAllXOType()) != nullptr) {
 				Location here = (board[i][0])->getLocation() ;
-				vector<Location> *elsewhere = board[i][0]->getAllXOType() ;
+				vector<Location> *elsewhere = (board[i][0])->getAllXOType() ;
+				
 				ret = findPattern(here, elsewhere, direction::null, 0) ;
 				if (ret == true) {
 					return ret ;
@@ -292,7 +292,7 @@ bool Game::checkLocations() {
 		if (((board[0][i])->getXO()) != blank) {
 			if (((board[0][i])->getAllXOType()) != nullptr) {
 				Location here = (board[0][i])->getLocation() ;
-				vector<Location> *elsewhere = board[0][i]->getAllXOType() ;
+				vector<Location> *elsewhere = (board[0][i])->getAllXOType() ;
 				ret = findPattern(here, elsewhere, direction::null, 0) ;
 				if (ret == true) {
 					return ret ;

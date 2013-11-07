@@ -68,8 +68,8 @@ protected:
 	 0 if not previously written (write accepted)
 	 1 if previously written - unwritable index
 	 2 if all indices written - game over (we can get this more directly from checkComplete())
-	 If still at 3 then assignement to plyrActnCheck is not working correctly, we will throw an exception */
-	int plyrActnCheck ;
+	 If still at 3 then assignement to plyrActnCode is not working correctly, we will throw an exception */
+	int plyrActnCode ;
 	
 	void writeAllIndex(XO) ;
 	void resetGame() ; //cleans the game board, resets members, etc.

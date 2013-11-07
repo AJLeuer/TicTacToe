@@ -66,20 +66,25 @@ XO SmartXO::getXO() {
 }
 
 vector<Location>* SmartXO::getAllXOType() {
-	if (this->getXO() == X) {
-		vector<Location>* xlocs = new vector<Location>() ;
-		for(unsigned int i = 0 ; i < xDatabase.size() ; i++) {
-			if (((((xDatabase.at(i))->getLocation()).x) == (this->getLocation().x)) && ((((xDatabase.at(i))->getLocation()).y) == (this->getLocation().y))) {
-				xlocs->push_back((xDatabase.at(i)->getLocation())) ;
+	XO xo = this->getXO() ;
+	
+	if (xo == X) {
+		vector<Location>* xlocs = new vector<Location> ;
+		for(vector<SmartXO*>::size_type i = 0 ; i < xDatabase.size() ; i++) {
+			Location dbLoc = (xDatabase.at(i))->getLocation() ;
+			if (((dbLoc.x) == (this->getLocation().x)) && ((dbLoc.y) == (this->getLocation().y))) {
+				xlocs->push_back(dbLoc) ;
 			}
+			
 		}
 		return xlocs ;
 	}
-	else if (this->getXO() == O) {
-		vector<Location>* olocs = new vector<Location>() ;
-		for(unsigned int i = 0 ; i < xDatabase.size() ; i++) {
-			if (((((oDatabase.at(i))->getLocation()).x) == (this->getLocation().x)) && ((((oDatabase.at(i))->getLocation()).y) == (this->getLocation().y))) {
-				olocs->push_back((oDatabase.at(i)->getLocation())) ;
+	else if (xo == O) {
+		vector<Location>* olocs = new vector<Location> ;
+		for(vector<SmartXO*>::size_type i = 0 ; i < oDatabase.size() ; i++) {
+			Location dbLoc = (oDatabase.at(i))->getLocation() ;
+			if (((dbLoc.x) == (this->getLocation().x)) && ((dbLoc.y) == (this->getLocation().y))) {
+				olocs->push_back(dbLoc) ;
 			}
 		}
 		return olocs ;
