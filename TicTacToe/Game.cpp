@@ -115,8 +115,9 @@ bool Game::checkSetCompleted() {
     bool allWritten = true ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
-            if (!(isWritten(i, j)))
-			allWritten = false ;
+            if (!(isWritten(i, j))) {
+				allWritten = false ;
+			}
         }
     }
 	return allWritten ;
@@ -170,19 +171,21 @@ void Game::resetGame() {
 
 
 void Game::playerAction(int x, int y) {
-    if (checkSetCompleted())
-	plyrActnCode = 2 ;
-	else if (isWritten(x, y))
-	plyrActnCode = 1 ;
-	else if (!(isWritten(x, y))){
+    if (checkSetCompleted()) {
+		plyrActnCode = 2 ;
+	}
+	else if (isWritten(x, y)) {
+		plyrActnCode = 1 ;
+	}
+	else if (!(isWritten(x, y))) {
 		writeIndex(x, y, currentPlayer->getXO()) ;
 		tempPlayer = currentPlayer ;
 		currentPlayer = nextPlayer ;
 		nextPlayer = tempPlayer ;
 		if (checkSetCompleted())
-		plyrActnCode = 2 ; //should end this game
+			plyrActnCode = 2 ; //should end this game
 		else
-		plyrActnCode = 0 ;
+			plyrActnCode = 0 ;
 	}
 }
 
@@ -204,10 +207,12 @@ void Game::nextGameEvent(int x, int y) {
 	
 	checkWin() ;
 	
-	if ((plyrActnCode == 0) && (!(winner == true)))
+	if ((plyrActnCode == 0) && (!(winner == true))) {
 		*currentGameLog << toString() << endl << endl  ;
-	else if (plyrActnCode== 1)
-		;
+	}
+	else if (plyrActnCode== 1) {
+		; //that index was written, we'll try again
+	}
 	else if (plyrActnCode == 3) {
 		cout << "Problem with playerAction() function. debug" << endl ;
 		throw new exception() ;
@@ -215,6 +220,8 @@ void Game::nextGameEvent(int x, int y) {
 	if ((plyrActnCode == 2) || (winner == true)) {
 		*currentGameLog << toString() << endl << endl  ;
 		*currentGameLog << winPlayer->name << " wins! Game over!" << endl << endl ;
+		string s = toString() ; //remove this
+		
 		resetGame() ;
 	}
 }
@@ -240,23 +247,28 @@ string Game::toString() {
     stringstream *gameString = new stringstream() ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
-            if (j == 0)
-			*gameString << getIndex(j,i) ;
+            if (j == 0) {
+				*gameString << getIndex(i, j) ;
+			}
             if ((j > 0) && (j < (rowSize - 1))) {
-                if (getIndex(i, j) == ' ')
-				*gameString << " |" << getIndex(j,i) << " |" ;
-                else
-				*gameString << " | " << getIndex(j,i) << "|" ;
+                if (getIndex(i, j) == ' ') {
+					*gameString << " |" << getIndex(i, j) << " |" ;
+				}
+                else {
+					*gameString << " | " << getIndex(i, j) << "|" ;
+				}
             }
-            if (j == (rowSize - 1))
-			*gameString << getIndex(j, i) << endl ;
+            if (j == (rowSize - 1)) {
+				*gameString << getIndex(i, j) << endl ;
+			}
         }
         if (i < (boardSize - 1)) {
             *gameString << "-- -- --" ;
             *gameString << endl ;
         }
-        if (i == (boardSize - 1))
-		*gameString << endl ;
+        if (i == (boardSize - 1)) {
+			*gameString << endl ;
+		}
     }
     return gameString->str() ;
 }
@@ -304,6 +316,9 @@ bool Game::checkLocations() {
 }
 
 bool Game::findPattern(Location here, vector<Location>* elseWhere, direction d, int chainSize) {
+	string s = this->toString() ;  //remove this
+	
+	
     if (chainSize >= boardSize) {
         return true ;
     }
@@ -313,43 +328,43 @@ bool Game::findPattern(Location here, vector<Location>* elseWhere, direction d, 
 			return findPattern(*loc, elseWhere, direction::right, (chainSize + 1)) ;
 		}
 	}
-	else if ((d = direction::null) || (d = direction::left)) { // then search right next...
+	else if ((d = direction::null) || (d = direction::left)) {
 		Location *loc = (locSearch(here, elseWhere, -1, 0)) ;
 		if (loc != nullptr) {
 			return findPattern(*loc, elseWhere, direction::left, (chainSize + 1)) ;
 		}
 	}
-	else if ((d = direction::null) || (d = direction::up)) { // then search right next...
+	else if ((d = direction::null) || (d = direction::up)) {
 		Location *loc = (locSearch(here, elseWhere, 0, -1)) ;
 		if (loc != nullptr) {
 			return findPattern(*loc, elseWhere, direction::up, (chainSize + 1)) ;
 		}
 	}
-	else if ((d = direction::null) || (d = direction::down)) { // then search right next...
+	else if ((d = direction::null) || (d = direction::down)) {
 		Location *loc = (locSearch(here, elseWhere, 0, 1)) ;
 		if (loc != nullptr) {
 			return findPattern(*loc, elseWhere, direction::down, (chainSize + 1)) ;
 		}
 	}
-	else if ((d = direction::null) || (d = direction::upRight)) { // then search right next...
+	else if ((d = direction::null) || (d = direction::upRight)) {
 		Location *loc = (locSearch(here, elseWhere, 1, -1)) ;
 		if (loc != nullptr) {
 			return findPattern(*loc, elseWhere, direction::upRight, (chainSize + 1)) ;
 		}
 	}
-	else if ((d = direction::null) || (d = direction::upLeft)) { // then search right next...
+	else if ((d = direction::null) || (d = direction::upLeft)) {
 		Location *loc = (locSearch(here, elseWhere, -1, -1)) ;
 		if (loc != nullptr) {
 			return findPattern(*loc, elseWhere, direction::upLeft, (chainSize + 1)) ;
 		}
 	}
-	else if ((d = direction::null) || (d = direction::downRight)) { // then search right next...
+	else if ((d = direction::null) || (d = direction::downRight)) {
 		Location *loc = (locSearch(here, elseWhere, 1, 1)) ;
 		if (loc != nullptr) {
 			return findPattern(*loc, elseWhere, direction::downRight, (chainSize + 1)) ;
 		}
 	}
-	else if ((d = direction::null) || (d = direction::downLeft)) { // then search right next...
+	else if ((d = direction::null) || (d = direction::downLeft)) { 
 		Location *loc = (locSearch(here, elseWhere, -1, 1)) ;
 		if (loc != nullptr) {
 			return findPattern(*loc, elseWhere, direction::downLeft, (chainSize + 1)) ;

@@ -25,30 +25,37 @@ SmartXO::SmartXO(XO xorO, int xloc, int yloc) {
 	
 	iDs++ ;
 	SmartXO *sxop = this ;
-	if(this->getXO() == X)
-	xDatabase.push_back(sxop) ;
-	else if(this->getXO() == O)
-	oDatabase.push_back(sxop) ;
+	if(this->getXO() == X) {
+		xDatabase.push_back(sxop) ;
+	}
+	else if(this->getXO() == O) {
+		oDatabase.push_back(sxop) ;
+	}
 }
 
 void SmartXO::operator=(XO xorO) {
 	(this->xo) = xorO ;
 	SmartXO *sxop = this ;
-	if(this->getXO() == X)
-	xDatabase.push_back(sxop) ;
-	else if(this->getXO() == O)
-	oDatabase.push_back(sxop) ;
+	if(this->getXO() == X) {
+		xDatabase.push_back(sxop) ;
+	}
+	else if(this->getXO() == O) {
+		oDatabase.push_back(sxop) ;
+	}
 }
 
 
 
 bool SmartXO::compXO(XO first, XO second) {
-	if ((first == blank) || (second == blank))
-	return false ;
-	else if ((first == X) && (second == X))
-	return true ;
-	else if ((first == O) && (second == O))
-	return true ;
+	if ((first == blank) || (second == blank)) {
+		return false ;
+	}
+	else if ((first == X) && (second == X)) {
+		return true ;
+	}
+	else if ((first == O) && (second == O)) {
+		return true ;
+	}
 	return false ;
 	
 }
