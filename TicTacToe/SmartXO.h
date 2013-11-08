@@ -34,6 +34,8 @@ protected:
 	Location location ;
 	bool on_board ; //this smartXO will be placed on the game board
 	
+	static void flushDatabase() ;
+	
 	
 public:
 	SmartXO() ;
@@ -51,8 +53,8 @@ public:
 	bool compXO(XO, XO) ;
 } ;
 
-extern vector<SmartXO*> xDatabase ;
-extern vector<SmartXO*> oDatabase ;
+extern vector<SmartXO*>* xDatabase ;
+extern vector<SmartXO*>* oDatabase ;
 
 
 #endif

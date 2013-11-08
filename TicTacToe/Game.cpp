@@ -106,6 +106,10 @@ void Game::initPlayers(bool player0WantsX, string p0Name, string p1Name) {
     player0->setName(p0Name) ;
     player1->setName(p1Name) ;
     
+	winPlayer = nullptr ;
+	lastWinner = nullptr ;
+	
+	
     bool player0First = rand() % 2 ;
 	if (player0First) {
 		currentPlayer = player0 ;
@@ -125,7 +129,6 @@ void Game::initPlayers(bool player0WantsX, string p0Name, string p1Name) {
         player0->setXO(O) ;
         player1->setXO(X) ;
     }
-    
 }
 
 Player* Game::idPlByXO(XO Xo) {
@@ -140,30 +143,6 @@ Player* Game::idPlByXO(XO Xo) {
 		cout << "seriously? check the idPlByXO() function" << endl ;
 		throw new exception() ;
 	}
-}
-
-
-/* Set true if we've started a game
- */
-void Game::setStarted(bool st) {
-    started = st ;
-	gameOver = (!st) ;
-}
-
-bool Game::checkSetCompleted() {
-    bool allWritten = true ;
-    for (int i = 0; i < boardSize; i++) {
-        for (int j = 0 ; j < rowSize; j++) {
-            if (!(isWritten(i, j))) {
-				allWritten = false ;
-			}
-        }
-    }
-	return allWritten ;
-}
-
-bool Game::checkStarted() {
-    return started ;
 }
 
 char Game::getIndex(int x, int y) {
@@ -193,23 +172,97 @@ void Game::writeAllIndex(XO xorO) {
 	}
 }
 
-void Game::resetGame() {
-	gamesPlayed++ ;
-	setStarted(false) ; //will set gameOver state as well
-	winner = false ;
-	winningXO = nullxo ;
-	plyrActnCode = 3 ;
-	writeAllIndex(blank) ;
-	if (winPlayer == player0) {
-		currentPlayer = player0 ;
-		nextPlayer = player1 ;
+/* Set true if we've started a game
+ */
+void Game::setStarted(bool st) {
+    started = st ;
+	gameOver = (!st) ;
+}
+
+bool Game::checkSetCompleted() {
+    bool allWritten = true ;
+    for (int i = 0; i < boardSize; i++) {
+        for (int j = 0 ; j < rowSize; j++) {
+            if (!(isWritten(i, j))) {
+				allWritten = false ;
+			}
+        }
+    }
+	return allWritten ;
+}
+
+bool Game::checkStarted() {
+    return started ;
+}
+
+void Game::checkWin() {
+	bool won = checkLocations() ;
+	if (won) {
+		winPlayer = idPlByXO(winningXO) ;
 	}
-	else {
-		currentPlayer = player1 ;
-		nextPlayer = player0 ;
+	winner = won ;
+}
+
+void Game::playSimGame() {
+	
+	while(true) {
+		
+		int x = rand() % 3 ;
+		int y = rand() % 3 ;
+		
+		nextGameEvent(x, y) ;
+		if (gameOver) {
+			break ;
+		}
 	}
 }
 
+void Game::playGameRtime() {
+	currentGameLog = &cout ;
+	//todo implement
+	//code
+}
+
+
+void Game::nextGameEvent(int x, int y) {
+    if (!(checkStarted())) {
+        setStarted(true) ;
+		*currentGameLog << "New Game!" << endl ;
+		if (gamesPlayed == 0) {
+			*currentGameLog << player0->getName() <<  " is " << player0->getXOChar() << "." << endl ;
+			*currentGameLog << player1->getName() <<  " is " << player1->getXOChar() << "." << endl ;
+			*currentGameLog << currentPlayer->getName() << " goes first!" << endl ;
+		}
+		else {
+			*currentGameLog << "Since " << currentPlayer->getName() << " won last, " << currentPlayer->getName() << " goes first!" << endl ;
+		}
+		*currentGameLog << nextPlayer->getName() << " goes second!" << endl << endl <<endl ;
+    }
+	
+	playerAction(x, y) ;
+	checkWin() ;
+	
+	if ((plyrActnCode == 0) && (!(winner == true))) {
+		*currentGameLog << toString() << endl << endl  ;
+	}
+	else if (plyrActnCode == 1) {
+		; //that index was written, we'll try again
+	}
+	else if (plyrActnCode == 3) {
+		cout << "Problem with playerAction() function. debug" << endl ;
+		throw new exception() ;
+	}
+	if ((plyrActnCode == 2) || (winner == true)) {
+		*currentGameLog << toString() << endl << endl  ;
+		if (winner) {
+			*currentGameLog << winPlayer->getName() << " wins! Game over!" << endl << endl ;
+		}
+		else if(plyrActnCode == 2) {
+			*currentGameLog << "Game over! No winners this round." << endl << endl ;
+		}
+		resetGame() ;
+	}
+}
 
 void Game::playerAction(int x, int y) {
     if (checkSetCompleted()) {
@@ -232,69 +285,24 @@ void Game::playerAction(int x, int y) {
 	}
 }
 
-void Game::nextGameEvent(int x, int y) {
-    if (!(checkStarted())) {
-        setStarted(true) ;
-		*currentGameLog << "New Game!" << endl ;
-		if (gamesPlayed == 0) {
-			*currentGameLog << player0->getName() <<  " is " << player0->getXOChar() << "." << endl ;
-			*currentGameLog << player1->getName() <<  " is " << player1->getXOChar() << "." << endl ;
-			*currentGameLog << currentPlayer->getName() << " goes first!" << endl ;
-		}
-		else {
-			*currentGameLog << "Since " << currentPlayer->getName() << " won last, " << currentPlayer->getName() << " goes first!" << endl ;
-		}
-		*currentGameLog << nextPlayer->getName() << " goes second!" << endl << endl <<endl ;
-    }
-	
-	playerAction(x, y) ;
-	
-	checkWin() ;
-	
-	if ((plyrActnCode == 0) && (!(winner == true))) {
-		*currentGameLog << toString() << endl << endl  ;
+void Game::resetGame() {
+	gamesPlayed++ ;
+	setStarted(false) ; //will set gameOver state as well
+	winner = false ;
+	winningXO = nullxo ;
+	plyrActnCode = 3 ;
+	writeAllIndex(blank) ;
+	flushDatabase() ;
+	if (winPlayer == player0) {
+		currentPlayer = player0 ;
+		nextPlayer = player1 ;
 	}
-	else if (plyrActnCode == 1) {
-		; //that index was written, we'll try again
+	else {
+		currentPlayer = player1 ;
+		nextPlayer = player0 ;
 	}
-	else if (plyrActnCode == 3) {
-		cout << "Problem with playerAction() function. debug" << endl ;
-		throw new exception() ;
-	}
-	if ((plyrActnCode == 2) || (winner == true)) {
-		*currentGameLog << toString() << endl << endl  ;
-		*currentGameLog << winPlayer->getName() << " wins! Game over!" << endl << endl ;
-		
-		//string s = toString() ; //remove this
-		
-		resetGame() ;
-	}
-}
-
-void Game::playSimGame() {
-	while(true) {
-		int x = rand() % 3 ;
-		int y = rand() % 3 ;
-		nextGameEvent(x, y) ;
-		if (gameOver) {
-			break ;
-		}
-	}
-}
-
-void Game::playGameRtime() {
-	currentGameLog = &cout ;
-	//todo implement
-	//code
-}
-
-void Game::checkWin() {
-	bool won = checkLocations() ;
-	if (won) {
-		
-		winPlayer = idPlByXO(winningXO) ;
-	}
-	winner = won ;
+	lastWinner = winPlayer ;
+	winPlayer = nullptr ;
 }
 
 bool Game::checkLocations() {

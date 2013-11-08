@@ -13,8 +13,8 @@ Location::Location() {
 
 unsigned iDs = 0 ;
 
-vector<SmartXO*> xDatabase = vector<SmartXO*>() ;
-vector<SmartXO*> oDatabase = vector<SmartXO*>() ;
+vector<SmartXO*>* xDatabase = new vector<SmartXO*>() ;
+vector<SmartXO*>* oDatabase = new vector<SmartXO*>() ;
 
 SmartXO::SmartXO() {
 	this->xo = blank ;
@@ -31,13 +31,23 @@ SmartXO::SmartXO(XO xorO, int xloc, int yloc, bool ob) {
 	this->location.y = yloc ;
 	this->on_board = ob ;
 	
-	SmartXO *sxop = this ;
-	if(this->getXO() == X) {
-		xDatabase.push_back(sxop) ;
+	if(this->on_board == true) {
+		SmartXO *sxop = this ;
+		if(this->getXO() == X) {
+			xDatabase->push_back(sxop) ;
+		}
+		else if(this->getXO() == O) {
+			oDatabase->push_back(sxop) ;
+		}
 	}
-	else if(this->getXO() == O) {
-		oDatabase.push_back(sxop) ;
-	}
+}
+
+void SmartXO::flushDatabase() {
+	delete xDatabase ;
+	delete oDatabase ;
+	
+	xDatabase = new vector<SmartXO*>() ;
+	oDatabase = new vector<SmartXO*>() ;
 }
 
 
@@ -48,10 +58,10 @@ void SmartXO::operator=(XO xorO) {
 	SmartXO *sxop = this ;
 	if (this->on_board) {
 		if(this->getXO() == X) {
-			xDatabase.push_back(sxop) ;
+			xDatabase->push_back(sxop) ;
 		}
 		else if(this->getXO() == O) {
-			oDatabase.push_back(sxop) ;
+			oDatabase->push_back(sxop) ;
 		}
 	}
 }
@@ -94,9 +104,9 @@ vector<Location>* SmartXO::getAllXOType() {
 	XO txo = this->getXO() ;
 	if (txo == X) {
 		vector<Location>* xlocs = new vector<Location> ;
-		for(vector<SmartXO*>::size_type i = 0 ; i < xDatabase.size() ; i++) {
-			if (xDatabase.at(i)->on_board) {
-				Location dbLoc = (xDatabase.at(i))->getLocation() ;
+		for(vector<SmartXO*>::size_type i = 0 ; i < xDatabase->size() ; i++) {
+			if (xDatabase->at(i)->on_board) {
+				Location dbLoc = (xDatabase->at(i))->getLocation() ;
 				xlocs->push_back(dbLoc) ;
 			}
 		}
@@ -104,9 +114,9 @@ vector<Location>* SmartXO::getAllXOType() {
 	}
 	else if (txo == O) {
 		vector<Location>* olocs = new vector<Location> ;
-		for(vector<SmartXO*>::size_type i = 0 ; i < oDatabase.size() ; i++) {
-			if (oDatabase.at(i)->on_board) {
-				Location dbLoc = (oDatabase.at(i))->getLocation() ;
+		for(vector<SmartXO*>::size_type i = 0 ; i < oDatabase->size() ; i++) {
+			if (oDatabase->at(i)->on_board) {
+				Location dbLoc = (oDatabase->at(i))->getLocation() ;
 				olocs->push_back(dbLoc) ;
 			}
 		}

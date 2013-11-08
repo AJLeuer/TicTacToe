@@ -47,6 +47,7 @@ protected:
 	Player *nextPlayer ;
 	Player *tempPlayer ; //points to a player temporarily
 	Player *winPlayer ; //obviously null to begin with
+	Player *lastWinner ;
 	XO winningXO ; //the X or O used by the winning player
 	
 	int gamesPlayed ;
