@@ -19,7 +19,7 @@ int main(int argc, const char * argv[]) {
 	
 
 
-    Game *g = new Game(false, "Adam") ;
+    Game *g = new Game("Adam") ;
     g->playSimGame() ;
 	
     cout << g->getGameLog() << endl ;

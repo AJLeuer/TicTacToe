@@ -32,12 +32,13 @@ enum direction {
 } ;
 
 
-class Game : public Player, public SmartXO {
+class Game : public SmartXO {
     
 protected:
     SmartXO* board[3][3] ;
 	int boardSize ;
     int rowSize ;
+	int maxSize ; //the larger of the rows or columns (in case they were ever different)
     
     Player *player0 ; //in some cases our player will be human, in others ai
     Player *player1 ;
@@ -46,9 +47,9 @@ protected:
 	Player *nextPlayer ;
 	Player *tempPlayer ; //points to a player temporarily
 	Player *winPlayer ; //obviously null to begin with
+	XO winningXO ; //the X or O used by the winning player
 	
 	int gamesPlayed ;
-	int gpCounter ;
     
     std::ostream *currentGameLog ; //record of current game
     
@@ -83,11 +84,14 @@ protected:
 	
 public:
     Game() ;
+	Game(string) ;
     Game(bool, string) ; //allows for player input on name, X or O
     Game(bool, string, string) ; //also allows player to choose first/second turn
     void initPlayers() ;
     void initPlayers(string, string) ;
     void initPlayers(bool, string, string) ;
+	
+	Player* idPlByXO(XO) ; //identifies player by their X or O
     
     char getIndex(int, int) ;
     XO getIndexAsXO(int, int) ;
@@ -108,7 +112,7 @@ public:
 	
 } ;
 
-
+static int ceiling(int, int) ;
 
 
 

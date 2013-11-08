@@ -16,14 +16,27 @@ using namespace std ;
 
 
 struct Player {
-    
-public:
-    Player() {} ;
+private:
     string name ;
 	XO xorO ;
-    
-	char getXOChar() { return SmartXO::getXOChar(xorO); }
+
+public:
+	void setXO(XO Xo) {
+		this->xorO = Xo ;
+	}
+	
 	XO getXO() { return xorO ; }
+	
+	char getXOChar() { return SmartXO::getXOChar(xorO); }
+	
+	void setName(string name) {
+		this->name = name ;
+	}
+	
+	string getName() {
+		return this->name ;
+	}
+	
     
 };
 

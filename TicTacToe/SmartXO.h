@@ -32,14 +32,12 @@ protected:
 	XO xo ;
 	int id ;
 	Location location ;
+	bool on_board ; //this smartXO will be placed on the game board
 	
-	
-	bool compXO(XO, XO) ;
 	
 public:
 	SmartXO() ;
-	SmartXO(XO, int, int) ;
-	void cleanDB() ; //deletes changed XOs from its database (x or o)
+	SmartXO(XO, int, int, bool) ;
 	void scanNearby() ;
 	void operator=(XO) ;
 	
@@ -50,6 +48,7 @@ public:
 	
 	vector<Location>* getAllXOType() ; //returns array of locations of smartXO objects same XO type (not including blank) as this
 	
+	bool compXO(XO, XO) ;
 } ;
 
 extern vector<SmartXO*> xDatabase ;

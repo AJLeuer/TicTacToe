@@ -15,7 +15,8 @@ using namespace std ;
 enum XO {
     X = 'X',
     O = 'O',
-    blank = ' '
+    blank = ' ',
+	nullxo = 'N' //special case
 } ;
 
 
