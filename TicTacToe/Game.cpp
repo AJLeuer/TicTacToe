@@ -233,13 +233,30 @@ void Game::nextGameEvent(int x, int y) {
 			*currentGameLog << player1->getName() <<  " is " << player1->getXOChar() << "." << endl ;
 			*currentGameLog << currentPlayer->getName() << " goes first!" << endl ;
 		}
-		else {
-			*currentGameLog << "Since " << currentPlayer->getName() << " won last, " << currentPlayer->getName() << " goes first!" << endl ;
+		else if (lastWinner != nullptr) {
+			*currentGameLog << "Since " << lastWinner->getName() << " won last, " << currentPlayer->getName() << " goes first!" << endl ;
+		}
+		else if (lastWinner == nullptr) {
+			*currentGameLog << "Since there wasn't a winner last time, the first player will be chosen randomly... " << currentPlayer->getName() << " goes first!" << endl ;
 		}
 		*currentGameLog << nextPlayer->getName() << " goes second!" << endl << endl <<endl ;
     }
 	
-	playerAction(x, y) ;
+	//playerAction(x, y) ; <-uncomment this!
+	
+	//debug code - delete this
+	writeIndex(0, 0, O) ;
+	writeIndex(1, 0, X) ;
+	writeIndex(2, 0, O) ;
+	writeIndex(0, 1, X)	;
+	writeIndex(1, 1, O)	;
+	writeIndex(2, 1, O) ;
+	writeIndex(0, 2, X) ;
+	writeIndex(1, 2, X) ;
+	writeIndex(2, 2, X) ;
+	plyrActnCode = 1 ;
+	//end
+	
 	checkWin() ;
 	
 	if ((plyrActnCode == 0) && (!(winner == true))) {
@@ -286,6 +303,9 @@ void Game::playerAction(int x, int y) {
 }
 
 void Game::resetGame() {
+	if (winner == false) {
+		;
+	}
 	gamesPlayed++ ;
 	setStarted(false) ; //will set gameOver state as well
 	winner = false ;
@@ -293,13 +313,26 @@ void Game::resetGame() {
 	plyrActnCode = 3 ;
 	writeAllIndex(blank) ;
 	flushDatabase() ;
-	if (winPlayer == player0) {
-		currentPlayer = player0 ;
-		nextPlayer = player1 ;
+	if (winPlayer != nullptr) {
+		if (winPlayer == player0) {
+			currentPlayer = player0 ;
+			nextPlayer = player1 ;
+		}
+		else if (winPlayer == player1) {
+			currentPlayer = player1 ;
+			nextPlayer = player0 ;
+		}
 	}
-	else {
-		currentPlayer = player1 ;
-		nextPlayer = player0 ;
+	else if (winPlayer == nullptr) {
+		bool pl0frst = rand() % 2 ;
+		if (pl0frst) {
+			currentPlayer = player0 ;
+			nextPlayer = player1 ;
+		}
+		else {
+			currentPlayer = player1 ;
+			nextPlayer = player0 ;
+		}
 	}
 	lastWinner = winPlayer ;
 	winPlayer = nullptr ;

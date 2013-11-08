@@ -29,6 +29,7 @@
 /* Begin PBXFileReference section */
 		665D9768181BE3AC008F86D5 /* TicTacToe */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TicTacToe; sourceTree = BUILT_PRODUCTS_DIR; };
 		665D976D181BE3AC008F86D5 /* TicTacToe.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = TicTacToe.1; sourceTree = "<group>"; };
+		66A7A0D9182CDE3000D60D47 /* Board Key.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = "Board Key.rtf"; sourceTree = "<group>"; };
 		66B0C29D182B38D200ECB2B7 /* Game.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Game.h; sourceTree = "<group>"; };
 		66B0C29E182B38D200ECB2B7 /* Player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Player.h; sourceTree = "<group>"; };
 		66B0C29F182B38D200ECB2B7 /* SmartXO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SmartXO.h; sourceTree = "<group>"; };
@@ -68,6 +69,7 @@
 		665D976A181BE3AC008F86D5 /* TicTacToe */ = {
 			isa = PBXGroup;
 			children = (
+				66A7A0D9182CDE3000D60D47 /* Board Key.rtf */,
 				66B0C29D182B38D200ECB2B7 /* Game.h */,
 				66B0C29E182B38D200ECB2B7 /* Player.h */,
 				66B0C29F182B38D200ECB2B7 /* SmartXO.h */,
