@@ -13,6 +13,7 @@
 #include "Player.h"
 #include "XO.h"
 #include "SmartXO.h"
+#include "Location.h"
 
 #ifndef TicTacToe_Game_h
 #define TicTacToe_Game_h
@@ -31,14 +32,16 @@ enum direction {
 	downLeft
 } ;
 
-
 class Game : public SmartXO {
     
 protected:
-    SmartXO* board[3][3] ;
-	int boardSize ;
-    int rowSize ;
-	int maxSize ; //the larger of the rows or columns (in case they were ever different)
+    SmartXO* board[(unsigned)3][(unsigned)3] ;
+	
+	 //the larger of the rows or columns (in case they were ever different)
+	unsigned boardSize ;
+    unsigned rowSize ;
+	unsigned maxSize ;
+	
     
     Player *player0 ; //in some cases our player will be human, in others ai
     Player *player1 ;
@@ -49,6 +52,11 @@ protected:
 	Player *winPlayer ; //obviously null to begin with
 	Player *lastWinner ;
 	XO winningXO ; //the X or O used by the winning player
+	
+	Player thisPlayer() ;
+	Player otherPlayer() ;
+	
+	
 	
 	int gamesPlayed ;
     
@@ -70,39 +78,44 @@ protected:
 	 0 if not previously written (write accepted)
 	 1 if previously written - unwritable index
 	 2 if all indices written - game over (we can get this more directly from checkComplete())
-	 If still at 3 then assignement to plyrActnCode is not working correctly, we will throw an exception */
-	int plyrActnCode ;
+	 If still at 3 then assignment to gameCode is not working correctly, we will throw an exception */
+	int gameCode ;
 	
 	void writeAllIndex(XO) ;
 	void resetGame() ; //cleans the game board, resets members, etc.
 	
 	void checkWin() ;
 	bool checkLocations() ;
-	bool findPattern(Location, vector<Location>*, direction, int) ; //takes a direction in which to recursively search for a straight line of Xs or Os
+	bool findPattern(Location, vector<Location>*, direction, unsigned lengthSearched, unsigned maxSearch) ; //takes a direction in which to recursively search for a straight line of Xs or Os. unsigned lengthSearched keeps track of how far we've searched, unsigned maxSearch sets the limit on the length of our search
 	Location* locSearch(Location, vector<Location>*, int, int) ; //searches through vector of locations to find any that are 1 unit away
 	
-	
-	
+	void aiAction(Player*) ; //AI function to choose the next spot to place X or O
+
 public:
     Game() ;
-	Game(string) ;
-    Game(bool, string) ; //allows for player input on name, X or O
-    Game(bool, string, string) ; //also allows player to choose first/second turn
-    void initPlayers() ;
-    void initPlayers(string, string) ;
-    void initPlayers(bool, string, string) ;
+	Game(bool, bool, string) ;
+    Game(bool, bool, bool, string) ; //allows for player input on name, X or O
+    Game(bool, bool, bool, string, string) ; //also allows player to choose first/second turn
+    void initPlayers(bool, bool) ;
+    void initPlayers(bool, bool, string, string) ;
+    void initPlayers(bool, bool, bool, string, string) ;
 	
 	Player* idPlByXO(XO) ; //identifies player by their X or O
     
     char getIndex(int, int) ;
     XO getIndexAsXO(int, int) ;
 	bool isWritten(int, int) ;
+	
+	
     
     void writeIndex(int, int, XO) ; //returns 0 if no issues, 1 if unwrittable, 2 if game complete
-    void playerAction(int, int) ;
-    void nextGameEvent(int, int) ;
-    void playSimGame() ;
+    void gameEvent(int, int) ;
+    void manageGame() ;
+	
+	//These functions (or the one below, or any other similar one) is responsible for controlling whether the currentPlayer behaves as an true AI, a simple random # generator, or takes input from a human
+    void playSimGame() ; //plays as a simulated human that randomly generates choices (not true AI) - pitted against a true AI player. One player must be specified as human in the constructor, the other as non-human (false)
 	void playGameRtime() ;
+	
     
     void wipeGame() ; //resets each space on the board
     
@@ -113,7 +126,9 @@ public:
 	
 } ;
 
-static int ceiling(int, int) ;
+static unsigned ceiling(unsigned, unsigned) ;
+
+void pause(int seconds) ;
 
 
 

@@ -16,7 +16,7 @@ enum XO {
     X = 'X',
     O = 'O',
     blank = ' ',
-	nullxo = 'N' //special case
+	nullxo = '?' //special case
 } ;
 
 

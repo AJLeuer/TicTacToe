@@ -1,43 +1,47 @@
 #include <iterator>
+#include <iostream>
+#include <sstream>
+
 
 #include "SmartXO.h"
+#include "Game.h"
+#include "Location.h"
 
 
 using namespace std ;
+
+unsigned int iDs = 0 ;
 
 Location::Location() {
 	x = 0 ;
 	y = 0 ;
 }
 
-
-unsigned iDs = 0 ;
-
 vector<SmartXO*>* xDatabase = new vector<SmartXO*>() ;
 vector<SmartXO*>* oDatabase = new vector<SmartXO*>() ;
 
-SmartXO::SmartXO() {
+SmartXO::SmartXO() { //this object won't be placed on the game board
+	this->id = iDs + 500 ;
+	iDs++ ;
 	this->xo = blank ;
-	this->id = -500 ;
 	this->location.x = -500 ;
 	this->location.y = -500 ;
 	this->on_board = false ;
 }
 
 SmartXO::SmartXO(XO xorO, int xloc, int yloc, bool ob) {
+	this->id = iDs ;
+	iDs++ ;
 	(this->xo) = xorO ;
-	this->id = (iDs++) ;
 	this->location.x = xloc ;
 	this->location.y = yloc ;
 	this->on_board = ob ;
-	
 	if(this->on_board == true) {
-		SmartXO *sxop = this ;
 		if(this->getXO() == X) {
-			xDatabase->push_back(sxop) ;
+			xDatabase->push_back(this) ;
 		}
 		else if(this->getXO() == O) {
-			oDatabase->push_back(sxop) ;
+			oDatabase->push_back(this) ;
 		}
 	}
 }
@@ -53,20 +57,43 @@ void SmartXO::flushDatabase() {
 
 
 void SmartXO::operator=(XO xorO) {
+	/*
+	if (((xorO == X) || (xorO == O)) && ((this->getXO() == X) || (this->getXO() == O))) {
+		std::cout << "A previously written smartXO may only be overwritten with blank." << std::endl ;
+		throw new exception() ;
+	}
+	*/
 	
+	//it's safe to assign the XO member:
 	(this->xo) = xorO ;
-	SmartXO *sxop = this ;
+	
+	//check to make sure this smartXO isn't in a database already:
+	vector<SmartXO*>::size_type x = xDatabase->size() ;
+	vector<SmartXO*>::size_type o = oDatabase->size() ;
+	for (vector<SmartXO*>::size_type i = 0; ((i < x) || (i < o)) ; i++) {
+		if(i < x) {
+			if ((xDatabase->at(i)->getID()) == (this->getID())) {
+				xDatabase->erase((xDatabase->begin()) + i) ;
+				x = xDatabase->size() ;
+			}
+		}
+		if (i < o) {
+			if ((oDatabase->at(i)->getID()) == (this->getID())) {
+				oDatabase->erase((oDatabase->begin()) + i) ;
+				o = oDatabase->size() ;
+			}
+		}
+	}
+	//then add this smartXO to its database:
 	if (this->on_board) {
 		if(this->getXO() == X) {
-			xDatabase->push_back(sxop) ;
+			xDatabase->push_back(this) ;
 		}
 		else if(this->getXO() == O) {
-			oDatabase->push_back(sxop) ;
+			oDatabase->push_back(this) ;
 		}
 	}
 }
-
-
 
 bool SmartXO::compXO(XO first, XO second) {
 	if ((first == blank) || (second == blank)) {
@@ -105,20 +132,16 @@ vector<Location>* SmartXO::getAllXOType() {
 	if (txo == X) {
 		vector<Location>* xlocs = new vector<Location> ;
 		for(vector<SmartXO*>::size_type i = 0 ; i < xDatabase->size() ; i++) {
-			if (xDatabase->at(i)->on_board) {
-				Location dbLoc = (xDatabase->at(i))->getLocation() ;
-				xlocs->push_back(dbLoc) ;
-			}
+			Location dbLoc = (xDatabase->at(i))->getLocation() ;
+			xlocs->push_back(dbLoc) ;
 		}
 		return xlocs ;
 	}
 	else if (txo == O) {
 		vector<Location>* olocs = new vector<Location> ;
 		for(vector<SmartXO*>::size_type i = 0 ; i < oDatabase->size() ; i++) {
-			if (oDatabase->at(i)->on_board) {
-				Location dbLoc = (oDatabase->at(i))->getLocation() ;
-				olocs->push_back(dbLoc) ;
-			}
+			Location dbLoc = (oDatabase->at(i))->getLocation() ;
+			olocs->push_back(dbLoc) ;
 		}
 		return olocs ;
 	}

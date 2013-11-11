@@ -13,17 +13,32 @@ X | O|O\
 X | X|X\
 \
 \
-How the program assigns to the game board:\
+How the program assigned to the game board (old):\
 \
         |         |\
-O \cf3 (0, 0)\cf2 | X \cf3 (0, 1)\cf2 |X \cf3 (0, 2)\
+O \cf3 (0, 0)\cf2 | X \cf3 (0, 1)\cf2 |O \cf3 (0, 2)\
         \cf2 |         |\
 -- -- --  -- -- \'97-  -- -- --\
         |         |\
         |         |      \
-X \cf3 (1, 0)\cf2 | O \cf3 (1, 1)\cf2 |X \cf3 (1, 2)\
+X \cf3 (1, 0)\cf2 | O \cf3 (1, 1)\cf2 |O\cf3 (1, 2)\
 \cf2         |         |\
 -- -- --  -- -- \'97- -- -- \'97-\
         |         |\
-O \cf3 (2, 0)\cf2 | O \cf3 (2, 1)\cf2 |X \cf3 (2, 2)\
+X \cf3 (2, 0)\cf2 | X \cf3 (2, 1)\cf2 |X \cf3 (2, 2)\
+        \cf2 |         |\
+\
+How the program assigns to the game board (now):\
+\
+        |         |\
+O \cf3 (0, 0)\cf2 | X \cf3 (1, 0)\cf2 |X \cf3 (2, 0)\
+        \cf2 |         |\
+-- -- --  -- -- \'97-  -- -- --\
+        |         |\
+        |         |      \
+X \cf3 (0, 1)\cf2 | O \cf3 (1, 1)\cf2 |X\cf3 (2, 1)\
+\cf2         |         |\
+-- -- --  -- -- \'97- -- -- \'97-\
+        |         |\
+O \cf3 (0, 2)\cf2 | O \cf3 (1, 2)\cf2 |X \cf3 (2, 2)\
         \cf2 |         |}

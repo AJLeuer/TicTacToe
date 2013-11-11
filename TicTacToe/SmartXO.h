@@ -10,6 +10,7 @@
 #include <iterator>
 
 #include "XO.h"
+#include "Location.h"
 
 
 #ifndef TicTacToe_SmartXO_h
@@ -19,18 +20,12 @@ using namespace std ;
 
 extern unsigned int iDs ;
 
-class Location {
-public:
-	int x, y ;
-	Location();
-} ;
-
 class SmartXO {
 	
 protected:
 	
 	XO xo ;
-	int id ;
+	unsigned id ;
 	Location location ;
 	bool on_board ; //this smartXO will be placed on the game board
 	
@@ -41,7 +36,7 @@ public:
 	SmartXO() ;
 	SmartXO(XO, int, int, bool) ;
 	void scanNearby() ;
-	void operator=(XO) ;
+	void operator=(XO) ; //note: an smartXO marked as X or O cannot be written again unless it is first marked blank
 	
 	Location getLocation() ;
 	int getID() ;

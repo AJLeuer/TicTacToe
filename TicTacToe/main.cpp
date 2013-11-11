@@ -19,16 +19,19 @@ int main(int argc, const char * argv[]) {
 	
 
 
-    Game *g = new Game("Adam") ;
+    Game *g = new Game(false, true, false, "Adam") ;
+	g->playGameRtime() ;
     g->playSimGame() ;
 	
+	
+/*
     cout << g->getGameLog() << endl ;
 	
 	cout << "trying another..." << endl ;
 	
 	g->playSimGame() ;
     cout << g->getGameLog() << endl ;
-	
+*/
 	
 }
 

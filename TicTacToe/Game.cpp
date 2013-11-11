@@ -17,7 +17,7 @@ using namespace std ;
 Game::Game() { //best for ai v ai
     srand((unsigned)time(NULL)) ;
 	winner = false ;
-	plyrActnCode = 3 ;
+	gameCode = 3 ;
 	gamesPlayed = 0 ;
 	boardSize = sizeof(board)/sizeof(board[0]) ;
     rowSize = sizeof(board[0])/sizeof(board[0][0]) ;
@@ -30,13 +30,13 @@ Game::Game() { //best for ai v ai
             board[i][j] = new SmartXO(blank, i, j, true) ;
         }
     }
-    initPlayers() ;
+    initPlayers(true, true) ;
 }
 
-Game::Game(string p0Name) {
+Game::Game(bool p0Human, bool p1Human, string p0Name) {
 	srand((unsigned)time(NULL)) ;
 	winner = false ;
-	plyrActnCode = 3 ;
+	gameCode = 3 ;
 	gamesPlayed = 0 ;
 	boardSize = sizeof(board)/sizeof(board[0]) ;
     rowSize = sizeof(board[0])/sizeof(board[0][0]) ;
@@ -49,13 +49,13 @@ Game::Game(string p0Name) {
             board[i][j] = new SmartXO(blank, i, j, true) ;
         }
     }
-    initPlayers(p0Name, "Computer") ;
+    initPlayers(p0Human, p1Human, p0Name, "Computer") ;
 }
 
-Game::Game(bool player0WantsX, string p0Name) { //p v ai
+Game::Game(bool player0WantsX, bool p0Human, bool p1Human, string p0Name) { //p v ai
     srand((unsigned)time(NULL)) ;
 	winner = false ;
-	plyrActnCode = 3 ;
+	gameCode = 3 ;
 	gamesPlayed = 0 ;
 	boardSize = sizeof(board)/sizeof(board[0]) ;
     rowSize = sizeof(board[0])/sizeof(board[0][0]) ;
@@ -68,13 +68,13 @@ Game::Game(bool player0WantsX, string p0Name) { //p v ai
             board[i][j] = new SmartXO(blank, i, j, true) ;
         }
     }
-    initPlayers(player0WantsX, p0Name, "Computer") ;
+    initPlayers(player0WantsX, p0Human, p1Human, p0Name, "Computer") ;
 }
 
-Game::Game(bool player0WantsX, string p0Name, string p1Name) { //pvp
+Game::Game(bool player0WantsX, bool p0Human, bool p1Human, string p0Name, string p1Name) { //pvp
     srand((unsigned)time(NULL)) ;
 	winner = false ;
-	plyrActnCode = 3 ;
+	gameCode = 3 ;
 	gamesPlayed = 0 ;
 	boardSize = sizeof(board)/sizeof(board[0]) ;
     rowSize = sizeof(board[0])/sizeof(board[0][0]) ;
@@ -87,24 +87,21 @@ Game::Game(bool player0WantsX, string p0Name, string p1Name) { //pvp
             board[i][j] = new SmartXO(blank, i, j, true) ;
         }
 	}
-    initPlayers(player0WantsX, p0Name, p1Name) ;
+    initPlayers(player0WantsX, p0Human, p1Human, p0Name, p1Name) ;
 }
 
-void Game::initPlayers() { //auto-inits with preset names
-    initPlayers("Player0", "Player1") ;
+void Game::initPlayers(bool p0Human, bool p1Human) { //auto-inits with preset names
+    initPlayers(p0Human, p1Human, "Player0", "Player1") ;
 }
 
-void Game::initPlayers(string p0Name, string p1Name) {
+void Game::initPlayers(bool p0Human, bool p1Human, string p0Name, string p1Name) {
     bool player0WantsX = rand() % 2 ;
-    initPlayers(player0WantsX, p0Name, p1Name) ;
+    initPlayers(player0WantsX, p0Human, p1Human, p0Name, p1Name) ;
 }
 
-void Game::initPlayers(bool player0WantsX, string p0Name, string p1Name) {
-    player0 = new Player() ;
-    player1 = new Player() ;
-    
-    player0->setName(p0Name) ;
-    player1->setName(p1Name) ;
+void Game::initPlayers(bool player0WantsX, bool p0Human, bool p1Human, string p0Name, string p1Name) {
+    player0 = new Player(p0Name, p0Human) ;
+    player1 = new Player(p1Name, p1Human) ;
     
 	winPlayer = nullptr ;
 	lastWinner = nullptr ;
@@ -129,6 +126,9 @@ void Game::initPlayers(bool player0WantsX, string p0Name, string p1Name) {
         player0->setXO(O) ;
         player1->setXO(X) ;
     }
+	
+	player0->setNextSpace(maxSize+1, maxSize+1) ;
+	player1->setNextSpace(maxSize+1, maxSize+1) ;
 }
 
 Player* Game::idPlByXO(XO Xo) {
@@ -140,7 +140,7 @@ Player* Game::idPlByXO(XO Xo) {
 		return player1 ;
 	}
 	else {
-		cout << "seriously? check the idPlByXO() function" << endl ;
+		cout << "check the idPlByXO() function" << endl ;
 		throw new exception() ;
 	}
 }
@@ -158,18 +158,6 @@ bool Game::isWritten(int x, int y) {
 		return true ;
 	}
     return false ;
-}
-
-void Game::writeIndex(int x, int y, XO inp) {
-    *(board[x][y]) = inp ;
-}
-
-void Game::writeAllIndex(XO xorO) {
-	for (int i = 0 ; i < boardSize; i++) {
-        for (int j = 0 ; j < rowSize; j++) {
-			writeIndex(i, j, xorO) ;
-		}
-	}
 }
 
 /* Set true if we've started a game
@@ -204,13 +192,21 @@ void Game::checkWin() {
 }
 
 void Game::playSimGame() {
-	
 	while(true) {
 		
-		int x = rand() % 3 ;
-		int y = rand() % 3 ;
+		int x ;
+		int y ;
+		if (currentPlayer->isHuman()) {
+			x = rand() % 3 ;
+			y = rand() % 3 ;
+			currentPlayer->setNextSpace(x, y) ;
+		}
+		else if (!(currentPlayer->isHuman())) {
+			aiAction(currentPlayer) ;
+			//this will setNextSpace() also
+		}
 		
-		nextGameEvent(x, y) ;
+		manageGame() ;
 		if (gameOver) {
 			break ;
 		}
@@ -219,12 +215,17 @@ void Game::playSimGame() {
 
 void Game::playGameRtime() {
 	currentGameLog = &cout ;
+	
+	*currentGameLog << "hi" << endl ;
 	//todo implement
-	//code
+}
+
+void Game::aiAction(Player *p) {
+	
 }
 
 
-void Game::nextGameEvent(int x, int y) {
+void Game::manageGame() {
     if (!(checkStarted())) {
         setStarted(true) ;
 		*currentGameLog << "New Game!" << endl ;
@@ -242,51 +243,38 @@ void Game::nextGameEvent(int x, int y) {
 		*currentGameLog << nextPlayer->getName() << " goes second!" << endl << endl <<endl ;
     }
 	
-	//playerAction(x, y) ; <-uncomment this!
-	
-	//debug code - delete this
-	writeIndex(0, 0, O) ;
-	writeIndex(1, 0, X) ;
-	writeIndex(2, 0, O) ;
-	writeIndex(0, 1, X)	;
-	writeIndex(1, 1, O)	;
-	writeIndex(2, 1, O) ;
-	writeIndex(0, 2, X) ;
-	writeIndex(1, 2, X) ;
-	writeIndex(2, 2, X) ;
-	plyrActnCode = 1 ;
-	//end
+	gameEvent(currentPlayer->getNextSpace().x, currentPlayer->getNextSpace().y) ;
 	
 	checkWin() ;
 	
-	if ((plyrActnCode == 0) && (!(winner == true))) {
+	if ((gameCode == 0) && (!(winner == true))) {
 		*currentGameLog << toString() << endl << endl  ;
 	}
-	else if (plyrActnCode == 1) {
+	else if (gameCode == 1) {
 		; //that index was written, we'll try again
 	}
-	else if (plyrActnCode == 3) {
-		cout << "Problem with playerAction() function. debug" << endl ;
+	else if (gameCode == 3) {
+		cout << "Problem with gameEvent() function. debug" << endl ;
 		throw new exception() ;
 	}
-	if ((plyrActnCode == 2) || (winner == true)) {
+	if ((gameCode == 2) || (winner == true)) {
 		*currentGameLog << toString() << endl << endl  ;
 		if (winner) {
 			*currentGameLog << winPlayer->getName() << " wins! Game over!" << endl << endl ;
 		}
-		else if(plyrActnCode == 2) {
+		else if(gameCode == 2) {
 			*currentGameLog << "Game over! No winners this round." << endl << endl ;
 		}
 		resetGame() ;
 	}
 }
 
-void Game::playerAction(int x, int y) {
+void Game::gameEvent(int x, int y) {
     if (checkSetCompleted()) {
-		plyrActnCode = 2 ;
+		gameCode = 2 ;
 	}
 	else if (isWritten(x, y)) {
-		plyrActnCode = 1 ;
+		gameCode = 1 ;
 	}
 	else if (!(isWritten(x, y))) {
 		writeIndex(x, y, currentPlayer->getXO()) ;
@@ -294,10 +282,24 @@ void Game::playerAction(int x, int y) {
 		currentPlayer = nextPlayer ;
 		nextPlayer = tempPlayer ;
 		if (checkSetCompleted()) {
-			plyrActnCode = 2 ; //should end this game
+			gameCode = 2 ; //should end this game
 		}
 		else {
-			plyrActnCode = 0 ;
+			gameCode = 0 ;
+		}
+	}
+}
+
+
+
+void Game::writeIndex(int x, int y, XO inp) {
+    *(board[x][y]) = inp ;
+}
+
+void Game::writeAllIndex(XO xorO) {
+	for (int i = 0 ; i < boardSize; i++) {
+        for (int j = 0 ; j < rowSize; j++) {
+			writeIndex(i, j, xorO) ;
 		}
 	}
 }
@@ -310,8 +312,10 @@ void Game::resetGame() {
 	setStarted(false) ; //will set gameOver state as well
 	winner = false ;
 	winningXO = nullxo ;
-	plyrActnCode = 3 ;
+	gameCode = 3 ;
 	writeAllIndex(blank) ;
+	player0->setNextSpace(maxSize+1, maxSize+1) ;
+	player1->setNextSpace(maxSize+1, maxSize+1) ;
 	flushDatabase() ;
 	if (winPlayer != nullptr) {
 		if (winPlayer == player0) {
@@ -347,7 +351,7 @@ bool Game::checkLocations() {
 				XO xo_here = (board[i][0])->getXO() ;
 				//<-
 				vector<Location> *elsewhere = (board[i][0])->getAllXOType() ;
-				ret = findPattern(here, elsewhere, direction::null, 0) ;
+				ret = findPattern(here, elsewhere, direction::null, 0, (maxSize-1)) ;
 				if (ret == true) {
 					winningXO = xo_here ;
 					return ret ;
@@ -359,11 +363,9 @@ bool Game::checkLocations() {
 		if (((board[0][i])->getXO()) != blank) {
 			if (((board[0][i])->getAllXOType()) != nullptr) {
 				Location here = (board[0][i])->getLocation() ;
-				
 				XO xo_here = (board[0][i])->getXO() ;
 				vector<Location> *elsewhere = (board[0][i])->getAllXOType() ;
-				
-				ret = findPattern(here, elsewhere, direction::null, 0) ;
+				ret = findPattern(here, elsewhere, direction::null, 0, (maxSize-1)) ; //we will search across the array (maxsize - 1)
 				if (ret == true) {
 					winningXO = xo_here ;
 					
@@ -375,59 +377,57 @@ bool Game::checkLocations() {
 	return ret ;
 }
 
-bool Game::findPattern(Location here, vector<Location>* elseWhere, direction d, int chainSize) {
+bool Game::findPattern(Location here, vector<Location>* elseWhere, direction d, unsigned lengthSearched, unsigned maxSearch) {
 	
-	//string s = this->toString() ;  //remove this
-	
-    if (chainSize >= (maxSize-1)) {
+    if (lengthSearched >= maxSearch) {
         return true ;
     }
 	if ((d == direction::null) || (d == direction::right)) { // then search right next...
 		Location *loc = (locSearch(here, elseWhere, 1, 0)) ;
 		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::right, (chainSize + 1)) ;
+			return findPattern(*loc, elseWhere, direction::right, (lengthSearched + 1), maxSearch) ;
 		}
 	}
 	if ((d == direction::null) || (d == direction::left)) {
 		Location *loc = (locSearch(here, elseWhere, -1, 0)) ;
 		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::left, (chainSize + 1)) ;
+			return findPattern(*loc, elseWhere, direction::left, (lengthSearched + 1), maxSearch) ;
 		}
 	}
 	if ((d == direction::null) || (d == direction::up)) {
 		Location *loc = (locSearch(here, elseWhere, 0, -1)) ;
 		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::up, (chainSize + 1)) ;
+			return findPattern(*loc, elseWhere, direction::up, (lengthSearched + 1), maxSearch) ;
 		}
 	}
 	if ((d == direction::null) || (d == direction::down)) {
 		Location *loc = (locSearch(here, elseWhere, 0, 1)) ;
 		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::down, (chainSize + 1)) ;
+			return findPattern(*loc, elseWhere, direction::down, (lengthSearched + 1), maxSearch) ;
 		}
 	}
 	if ((d == direction::null) || (d == direction::upRight)) {
 		Location *loc = (locSearch(here, elseWhere, 1, -1)) ;
 		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::upRight, (chainSize + 1)) ;
+			return findPattern(*loc, elseWhere, direction::upRight, (lengthSearched + 1), maxSearch) ;
 		}
 	}
 	if ((d == direction::null) || (d == direction::upLeft)) {
 		Location *loc = (locSearch(here, elseWhere, -1, -1)) ;
 		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::upLeft, (chainSize + 1)) ;
+			return findPattern(*loc, elseWhere, direction::upLeft, (lengthSearched + 1), maxSearch) ;
 		}
 	}
 	if ((d == direction::null) || (d == direction::downRight)) {
 		Location *loc = (locSearch(here, elseWhere, 1, 1)) ;
 		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::downRight, (chainSize + 1)) ;
+			return findPattern(*loc, elseWhere, direction::downRight, (lengthSearched + 1), maxSearch) ;
 		}
 	}
 	if ((d == direction::null) || (d == direction::downLeft)) {
 		Location *loc = (locSearch(here, elseWhere, -1, 1)) ;
 		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::downLeft, (chainSize + 1)) ;
+			return findPattern(*loc, elseWhere, direction::downLeft, (lengthSearched + 1), maxSearch) ;
 		}
 	}
 	return false ;
@@ -445,28 +445,28 @@ Location* Game::locSearch(Location here, vector<Location>* elseWhere, int x_offs
 
 string Game::toString() {
     stringstream *gameString = new stringstream() ;
-    for (int i = 0; i < boardSize; i++) {
-        for (int j = 0 ; j < rowSize; j++) {
+    for (int i = 0; i < rowSize ; i++) {
+        for (int j = 0 ; j < boardSize ; j++) {
             if (j == 0) {
-				*gameString << getIndex(i, j) ;
+				*gameString << getIndex(j, i) ;
 			}
-            if ((j > 0) && (j < (rowSize - 1))) {
-                if (getIndex(i, j) == ' ') {
-					*gameString << " |" << getIndex(i, j) << " |" ;
+            if ((j > 0) && (j < (boardSize - 1))) {
+                if (getIndex(j, i) == ' ') {
+					*gameString << " |" << getIndex(j, i) << " |" ;
 				}
                 else {
-					*gameString << " | " << getIndex(i, j) << "|" ;
+					*gameString << " | " << getIndex(j, i) << "|" ;
 				}
             }
-            if (j == (rowSize - 1)) {
-				*gameString << getIndex(i, j) << endl ;
+            if (j == (boardSize - 1)) {
+				*gameString << getIndex(j, i) << endl ;
 			}
         }
-        if (i < (boardSize - 1)) {
+        if (i < (rowSize - 1)) {
             *gameString << "-- -- --" ;
             *gameString << endl ;
         }
-        if (i == (boardSize - 1)) {
+        if (i == (rowSize - 1)) {
 			*gameString << endl ;
 		}
     }
@@ -479,7 +479,8 @@ string Game::getGameLog() {
     return tempLog->str() ;
 }
 
-static int ceiling(int x, int y) {
+
+static unsigned ceiling(unsigned x, unsigned y) {
 	if (x > y) {
 		return x ;
 	}
@@ -490,7 +491,7 @@ static int ceiling(int x, int y) {
 		return ((x+y)/2) ;
 	}
 	else {
-		cout << "how could you possibly screw up something so simple!" << endl ;
+		cout << "problem with ceiling func" << endl ;
 		throw new exception() ;
 	}
 }
