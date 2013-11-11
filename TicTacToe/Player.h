@@ -23,7 +23,8 @@ protected:
 	XO xorO ;
 	bool human ; //is this player human controlled or computer controlled, default behavior is to set to true (if not specified otherwise in constructor arg)
 	Location *nextSpace ; //an x and y coordinate that gives signifies the player or random generator's next choice
-
+	Location *lastWritten ;
+	
 public:
 	Player() ;
 	Player(string) ;
@@ -38,7 +39,11 @@ public:
 	bool isHuman() { return human ; } //else is AI
 	
 	void setNextSpace(int, int) ;
-	Location getNextSpace() ;
+	Location *getNextSpace() ;
+	
+	void setLastWritten(int, int) ;
+	void setLastWritten(void) {this->lastWritten = nullptr ; }
+	Location *getLastWritten() ;
 	
 };
 

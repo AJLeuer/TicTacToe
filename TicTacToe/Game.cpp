@@ -24,6 +24,8 @@ Game::Game() { //best for ai v ai
 	maxSize = ceiling(boardSize, rowSize) ;
 	winningXO = nullxo ;
     setStarted(false) ;
+	this->lastWritten = nullptr ;
+	initLocVectors() ;
     currentGameLog = new stringstream() ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
@@ -43,6 +45,8 @@ Game::Game(bool p0Human, bool p1Human, string p0Name) {
 	maxSize = ceiling(boardSize, rowSize) ;
 	winningXO = nullxo ;
     setStarted(false) ;
+	this->lastWritten = nullptr ;
+	initLocVectors() ;
     currentGameLog = new stringstream() ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
@@ -62,6 +66,8 @@ Game::Game(bool player0WantsX, bool p0Human, bool p1Human, string p0Name) { //p 
 	maxSize = ceiling(boardSize, rowSize) ;
 	winningXO = nullxo ;
     setStarted(false) ;
+	this->lastWritten = nullptr ;
+	initLocVectors() ;
     currentGameLog = new stringstream() ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
@@ -81,6 +87,8 @@ Game::Game(bool player0WantsX, bool p0Human, bool p1Human, string p0Name, string
 	maxSize = ceiling(boardSize, rowSize) ;
 	winningXO = nullxo ;
     setStarted(false) ;
+	this->lastWritten = nullptr ;
+	initLocVectors() ;
     currentGameLog = new stringstream() ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
@@ -105,8 +113,7 @@ void Game::initPlayers(bool player0WantsX, bool p0Human, bool p1Human, string p0
     
 	winPlayer = nullptr ;
 	lastWinner = nullptr ;
-	
-	
+
     bool player0First = rand() % 2 ;
 	if (player0First) {
 		currentPlayer = player0 ;
@@ -127,8 +134,17 @@ void Game::initPlayers(bool player0WantsX, bool p0Human, bool p1Human, string p0
         player1->setXO(X) ;
     }
 	
-	player0->setNextSpace(maxSize+1, maxSize+1) ;
-	player1->setNextSpace(maxSize+1, maxSize+1) ;
+	//player0->setNextSpace(maxSize+1, maxSize+1) ;
+	//player1->setNextSpace(maxSize+1, maxSize+1) ;
+}
+
+void Game::initLocVectors() {
+	free_locs = nullptr ;
+	corner_locs = new vector<Location*>() ;
+	corner_locs->push_back(new Location(0, 0)) ;
+	corner_locs->push_back(new Location(0, rowSize-1)) ;
+	corner_locs->push_back(new Location(boardSize-1, 0)) ;
+	corner_locs->push_back(new Location (boardSize-1, rowSize-1)) ;
 }
 
 Player* Game::idPlByXO(XO Xo) {
@@ -193,19 +209,6 @@ void Game::checkWin() {
 
 void Game::playSimGame() {
 	while(true) {
-		
-		int x ;
-		int y ;
-		if (currentPlayer->isHuman()) {
-			x = rand() % 3 ;
-			y = rand() % 3 ;
-			currentPlayer->setNextSpace(x, y) ;
-		}
-		else if (!(currentPlayer->isHuman())) {
-			aiAction(currentPlayer) ;
-			//this will setNextSpace() also
-		}
-		
 		manageGame() ;
 		if (gameOver) {
 			break ;
@@ -220,7 +223,30 @@ void Game::playGameRtime() {
 	//todo implement
 }
 
-void Game::aiAction(Player *p) {
+void Game::aiAction() {
+	if (corner_locs_free){
+		vector<Location*>* free_corners = new vector<Location*>() ;
+		bool check = false ;
+		for (vector<Location*>::size_type i = 0 ; i < free_locs->size() ; i++) {
+			for (vector<Location*>::size_type j = 0 ; j < corner_locs->size() ; j++) {
+				if (free_locs->at(i)->equals(corner_locs->at(j))) {
+					free_corners->push_back(free_locs->at(i)) ;
+					check = true ;
+				}
+			}
+		}
+		corner_locs_free = check ;
+		if (check) {
+			int r = std::rand() % free_corners->size() ;
+			vector<Location*>::iterator it = free_corners->begin();
+			std::advance(it, r);
+			Location *l = it.operator*() ;
+			currentPlayer->setNextSpace(l->x, l->y) ;
+		}
+	}
+	else if (!(corner_locs_free)) {
+		
+	}
 	
 }
 
@@ -243,7 +269,40 @@ void Game::manageGame() {
 		*currentGameLog << nextPlayer->getName() << " goes second!" << endl << endl <<endl ;
     }
 	
-	gameEvent(currentPlayer->getNextSpace().x, currentPlayer->getNextSpace().y) ;
+	if (lastWritten == nullptr) {
+		free_locs = new vector<Location*>() ;
+		for (int i = 0; i < boardSize ; i++) {
+			for (int j = 0; j < rowSize; j++) {
+				if (!(isWritten(i, j))) {
+					Location *l = new Location(i, j) ;
+					free_locs->push_back(l) ;
+				}
+			}
+		}
+	}
+	else {
+		for (vector<Location*>::size_type i = 0 ; i < free_locs->size() ; i++) {
+			if ((free_locs->at(i))->equals(lastWritten)) {
+				free_locs->erase(free_locs->begin() + i) ;
+			}
+		}
+	}
+	
+	int x ;
+	int y ;
+	if (currentPlayer->isHuman()) { //we may change this to take console input from a player
+		x = rand() % 3 ;
+		y = rand() % 3 ;
+		currentPlayer->setNextSpace(x, y) ;
+	}
+	
+	else if (!(currentPlayer->isHuman())) {
+		
+		aiAction() ;
+		//this will setNextSpace() also
+	}
+	
+	gameEvent(currentPlayer->getNextSpace()->x, currentPlayer->getNextSpace()->y) ;
 	
 	checkWin() ;
 	
@@ -278,6 +337,9 @@ void Game::gameEvent(int x, int y) {
 	}
 	else if (!(isWritten(x, y))) {
 		writeIndex(x, y, currentPlayer->getXO()) ;
+		currentPlayer->setLastWritten(x, y) ;
+		delete this->lastWritten ;
+		this->lastWritten = new Location(x, y) ;
 		tempPlayer = currentPlayer ;
 		currentPlayer = nextPlayer ;
 		nextPlayer = tempPlayer ;
@@ -316,6 +378,10 @@ void Game::resetGame() {
 	writeAllIndex(blank) ;
 	player0->setNextSpace(maxSize+1, maxSize+1) ;
 	player1->setNextSpace(maxSize+1, maxSize+1) ;
+	player0->setLastWritten() ; //sets to nullptr
+	player1->setLastWritten() ;
+	this->lastWritten = nullptr ;
+	corner_locs_free = true ;
 	flushDatabase() ;
 	if (winPlayer != nullptr) {
 		if (winPlayer == player0) {

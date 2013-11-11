@@ -12,28 +12,32 @@ Player::Player() {
 	this->name = " " ;
 	this->xorO = XO::nullxo ;
 	this->human = true ;
-	this->nextSpace = new Location(500, 500) ;
+	this->nextSpace = nullptr  ;
+	this->lastWritten = nullptr ;
 }
 
 Player::Player(string name) {
 	this->name = name ;
 	this->xorO = XO::nullxo ;
 	this->human = true ;
-	this->nextSpace = new Location(500, 500) ;
+	this->nextSpace = nullptr  ;
+	this->lastWritten = nullptr ;
 }
 
 Player::Player(string name, bool human) {
 	this->name = name ;
 	this->xorO = XO::nullxo ;
 	this->human = human ;
-	this->nextSpace = new Location(500, 500) ;
+	this->nextSpace = nullptr  ;
+	this->lastWritten = nullptr ;
 }
 
 Player::Player(string name, XO xOrO, bool human) {
 	this->name = name ;
 	this->xorO = xOrO ;
 	this->human = human ;
-	this->nextSpace = new Location(500, 500) ;
+	this->nextSpace = nullptr ;
+	this->lastWritten = nullptr ;
 }
 
 void Player::setXO(XO Xo) {
@@ -53,12 +57,26 @@ string Player::getName() {
 }
 
 void Player::setNextSpace(int x, int y) {
+	if (this->getNextSpace() == nullptr) {
+		this->nextSpace = new Location() ;
+	}
 	this->nextSpace->x = x ;
 	this->nextSpace->y = y ;
 }
 
-Location Player::getNextSpace() {
-	return *this->nextSpace ;
+Location* Player::getNextSpace() {
+	return this->nextSpace ;
 }
 
+void Player::setLastWritten(int x, int y) {
+	if (this->getLastWritten() == nullptr) {
+		this->lastWritten = new Location() ;
+	}
+	this->lastWritten->x = x ;
+	this->lastWritten->y = y ;
+}
+
+Location* Player::getLastWritten() {
+	return this->lastWritten ;
+}
 

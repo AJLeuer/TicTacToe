@@ -17,12 +17,15 @@ using namespace std ;
 
 int main(int argc, const char * argv[]) {
 	
+	
 
 
     Game *g = new Game(false, true, false, "Adam") ;
 	g->playGameRtime() ;
+	
     g->playSimGame() ;
 	
+ 
 	
 /*
     cout << g->getGameLog() << endl ;

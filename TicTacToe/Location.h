@@ -14,6 +14,7 @@ public:
 	int x, y ;
 	Location();
 	Location(int x, int y) { this->x = x ; this->y = y ; }
+	bool equals(Location *l) {return ((this->x == l->x) && (this->y == l->y)) ; }
 } ;
 
 

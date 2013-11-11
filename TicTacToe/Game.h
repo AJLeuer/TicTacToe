@@ -52,10 +52,16 @@ protected:
 	Player *winPlayer ; //obviously null to begin with
 	Player *lastWinner ;
 	XO winningXO ; //the X or O used by the winning player
+	Location *lastWritten ;
 	
 	Player thisPlayer() ;
 	Player otherPlayer() ;
 	
+	vector<Location*>* free_locs ;
+	vector<Location*>* corner_locs ;
+	bool corner_locs_free = true ; //there are still corners that haven't been written
+	
+	void initLocVectors() ;
 	
 	
 	int gamesPlayed ;
@@ -89,7 +95,7 @@ protected:
 	bool findPattern(Location, vector<Location>*, direction, unsigned lengthSearched, unsigned maxSearch) ; //takes a direction in which to recursively search for a straight line of Xs or Os. unsigned lengthSearched keeps track of how far we've searched, unsigned maxSearch sets the limit on the length of our search
 	Location* locSearch(Location, vector<Location>*, int, int) ; //searches through vector of locations to find any that are 1 unit away
 	
-	void aiAction(Player*) ; //AI function to choose the next spot to place X or O
+	void aiAction() ; //AI function to choose the next spot to place X or O
 
 public:
     Game() ;

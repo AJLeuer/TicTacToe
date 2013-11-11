@@ -118,7 +118,6 @@ int SmartXO::getID() {
 }
 
 XO SmartXO::getXO() {
-	
 	return xo ;
 }
 
