@@ -126,9 +126,8 @@ char SmartXO::getXOChar(XO xO) {
 	return (char)(Xo->getXO()) ;
 }
 
-vector<Location>* SmartXO::getAllXOType() {
-	XO txo = this->getXO() ;
-	if (txo == X) {
+vector<Location>* SmartXO::getAllLoc(XO txo) {
+	if ((xDatabase->size() > 0) && (txo == X)) {
 		vector<Location>* xlocs = new vector<Location> ;
 		for(vector<SmartXO*>::size_type i = 0 ; i < xDatabase->size() ; i++) {
 			Location dbLoc = (xDatabase->at(i))->getLocation() ;
@@ -136,7 +135,7 @@ vector<Location>* SmartXO::getAllXOType() {
 		}
 		return xlocs ;
 	}
-	else if (txo == O) {
+	else if ((oDatabase->size() > 0) && (txo == O)) {
 		vector<Location>* olocs = new vector<Location> ;
 		for(vector<SmartXO*>::size_type i = 0 ; i < oDatabase->size() ; i++) {
 			Location dbLoc = (oDatabase->at(i))->getLocation() ;
@@ -146,3 +145,23 @@ vector<Location>* SmartXO::getAllXOType() {
 	}
 	return nullptr ;
 }
+
+vector<SmartXO*>* SmartXO::getAllXO(XO xo) {
+	if ((xo == X) && (xDatabase->size() > 0)) {
+		vector<SmartXO*>* xXOs = new vector<SmartXO*>() ;
+		for (vector<SmartXO*>::size_type i = 0 ; i < xDatabase->size() ; i++) {
+			xXOs->push_back(xDatabase->at(i)) ;
+		}
+	}
+	else if ((xo == O) && (oDatabase->size() > 0)) {
+		vector<SmartXO*>* oXOs = new vector<SmartXO*>() ;
+		for (vector<SmartXO*>::size_type i = 0 ; i < oDatabase->size() ; i++) {
+			oXOs->push_back(oDatabase->at(i)) ;
+		}
+	}
+	return nullptr ;
+}
+
+
+
+

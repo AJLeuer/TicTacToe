@@ -25,7 +25,7 @@ Game::Game() { //best for ai v ai
 	winningXO = nullxo ;
     setStarted(false) ;
 	this->lastWritten = nullptr ;
-	initLocVectors() ;
+	initVectors() ;
     currentGameLog = new stringstream() ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
@@ -46,7 +46,7 @@ Game::Game(bool p0Human, bool p1Human, string p0Name) {
 	winningXO = nullxo ;
     setStarted(false) ;
 	this->lastWritten = nullptr ;
-	initLocVectors() ;
+	initVectors() ;
     currentGameLog = new stringstream() ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
@@ -67,7 +67,7 @@ Game::Game(bool player0WantsX, bool p0Human, bool p1Human, string p0Name) { //p 
 	winningXO = nullxo ;
     setStarted(false) ;
 	this->lastWritten = nullptr ;
-	initLocVectors() ;
+	initVectors() ;
     currentGameLog = new stringstream() ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
@@ -88,7 +88,7 @@ Game::Game(bool player0WantsX, bool p0Human, bool p1Human, string p0Name, string
 	winningXO = nullxo ;
     setStarted(false) ;
 	this->lastWritten = nullptr ;
-	initLocVectors() ;
+	initVectors() ;
     currentGameLog = new stringstream() ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
@@ -136,15 +136,6 @@ void Game::initPlayers(bool player0WantsX, bool p0Human, bool p1Human, string p0
 	
 	//player0->setNextSpace(maxSize+1, maxSize+1) ;
 	//player1->setNextSpace(maxSize+1, maxSize+1) ;
-}
-
-void Game::initLocVectors() {
-	free_locs = nullptr ;
-	corner_locs = new vector<Location*>() ;
-	corner_locs->push_back(new Location(0, 0)) ;
-	corner_locs->push_back(new Location(0, rowSize-1)) ;
-	corner_locs->push_back(new Location(boardSize-1, 0)) ;
-	corner_locs->push_back(new Location (boardSize-1, rowSize-1)) ;
 }
 
 Player* Game::idPlByXO(XO Xo) {
@@ -209,6 +200,7 @@ void Game::checkWin() {
 
 void Game::playSimGame() {
 	while(true) {
+		
 		manageGame() ;
 		if (gameOver) {
 			break ;
@@ -224,27 +216,38 @@ void Game::playGameRtime() {
 }
 
 void Game::aiAction() {
-	if (corner_locs_free){
-		vector<Location*>* free_corners = new vector<Location*>() ;
-		bool check = false ;
-		for (vector<Location*>::size_type i = 0 ; i < free_locs->size() ; i++) {
-			for (vector<Location*>::size_type j = 0 ; j < corner_locs->size() ; j++) {
-				if (free_locs->at(i)->equals(corner_locs->at(j))) {
-					free_corners->push_back(free_locs->at(i)) ;
-					check = true ;
+	XO xo = currentPlayer->getXO() ;
+	vector<Location>* allSpots = SmartXO::getAllLoc(xo) ;
+	if (allSpots != nullptr) {
+		Navigator *nav = new Navigator() ;
+		Navigator *searched = nullptr ;
+		nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
+		for (vector<SmartXO*>::size_type i = 0 ; i < allSpots->size() ; i++) {
+			searched = findSequence(allSpots->at(i), nav, allSpots, 1) ; // we will search for a line of at any two of our X or Os in a row (arg 1 here really means 2 in a row - start at 0, add 1 if we find a second in line with it)
+			if (searched->b == true) {
+				Location *l = findIndex(searched->loc, searched->dir) ;
+				if (l != nullptr) {
+					currentPlayer->setNextSpace(l->x, l->y) ;
+					break ;
 				}
 			}
 		}
-		corner_locs_free = check ;
-		if (check) {
-			int r = std::rand() % free_corners->size() ;
-			vector<Location*>::iterator it = free_corners->begin();
-			std::advance(it, r);
-			Location *l = it.operator*() ;
-			currentPlayer->setNextSpace(l->x, l->y) ;
-		}
 	}
-	else if (!(corner_locs_free)) {
+	//vector<Location> *elsewhere = (board[i][0])->getAllLoc() ;
+	//ret = findSequence(here, elsewhere, direction::null, 0, (maxSize-1)) ;
+	else if (cornersFree()){
+		int r = std::rand() % freeCorners->size() ;
+		vector<Location*>::iterator it = freeCorners->begin();
+		std::advance(it, r);
+		Location *l = it.operator*() ;
+		currentPlayer->setNextSpace(l->x, l->y) ;
+	}
+	else if (!(cornersFree())) {
+		unsigned center = (boardSize/2) ;
+		unsigned middle = (rowSize/2) ;
+		if (!(isWritten(center, middle))) {
+			currentPlayer->setNextSpace(center, middle) ;
+		}
 		
 	}
 	
@@ -269,40 +272,21 @@ void Game::manageGame() {
 		*currentGameLog << nextPlayer->getName() << " goes second!" << endl << endl <<endl ;
     }
 	
-	if (lastWritten == nullptr) {
-		free_locs = new vector<Location*>() ;
-		for (int i = 0; i < boardSize ; i++) {
-			for (int j = 0; j < rowSize; j++) {
-				if (!(isWritten(i, j))) {
-					Location *l = new Location(i, j) ;
-					free_locs->push_back(l) ;
-				}
-			}
-		}
-	}
-	else {
-		for (vector<Location*>::size_type i = 0 ; i < free_locs->size() ; i++) {
-			if ((free_locs->at(i))->equals(lastWritten)) {
-				free_locs->erase(free_locs->begin() + i) ;
-			}
-		}
-	}
+	updateFreeLocations() ;
 	
-	int x ;
-	int y ;
+	/*this block, up to gameEvent(), will handle all possible combinations of player opponents. Human vs human, human vs ai, ai vs ai, etc. Since gameEvent() switches the *currentPlayer pointer each time, we don't have to worry about specifying which player we're working with
+	 */
 	if (currentPlayer->isHuman()) { //we may change this to take console input from a player
-		x = rand() % 3 ;
-		y = rand() % 3 ;
+		int x = rand() % 3 ;
+		int y = rand() % 3 ;
 		currentPlayer->setNextSpace(x, y) ;
 	}
-	
 	else if (!(currentPlayer->isHuman())) {
-		
 		aiAction() ;
 		//this will setNextSpace() also
 	}
 	
-	gameEvent(currentPlayer->getNextSpace()->x, currentPlayer->getNextSpace()->y) ;
+	gameEvent() ;
 	
 	checkWin() ;
 	
@@ -316,7 +300,7 @@ void Game::manageGame() {
 		cout << "Problem with gameEvent() function. debug" << endl ;
 		throw new exception() ;
 	}
-	if ((gameCode == 2) || (winner == true)) {
+	if ((gameCode == 2) || (winner == true)) { //then we've reached end of game
 		*currentGameLog << toString() << endl << endl  ;
 		if (winner) {
 			*currentGameLog << winPlayer->getName() << " wins! Game over!" << endl << endl ;
@@ -328,34 +312,112 @@ void Game::manageGame() {
 	}
 }
 
-void Game::gameEvent(int x, int y) {
+void Game::gameEvent() {
+	Location *p = currentPlayer->getNextSpace() ;
     if (checkSetCompleted()) {
 		gameCode = 2 ;
 	}
-	else if (isWritten(x, y)) {
+	else if (isWritten(p->x, p->y)) {
 		gameCode = 1 ;
 	}
-	else if (!(isWritten(x, y))) {
-		writeIndex(x, y, currentPlayer->getXO()) ;
-		currentPlayer->setLastWritten(x, y) ;
-		delete this->lastWritten ;
-		this->lastWritten = new Location(x, y) ;
-		tempPlayer = currentPlayer ;
-		currentPlayer = nextPlayer ;
-		nextPlayer = tempPlayer ;
-		if (checkSetCompleted()) {
-			gameCode = 2 ; //should end this game
-		}
-		else {
-			gameCode = 0 ;
-		}
+	writeIndex(p->x, p->y, currentPlayer->getXO()) ;
+	currentPlayer->setLastWritten(p->x, p->y) ;
+	delete this->lastWritten ;
+	this->lastWritten = new Location(p->x, p->y) ;
+	tempPlayer = currentPlayer ;
+	currentPlayer = nextPlayer ;
+	nextPlayer = tempPlayer ;
+	if (checkSetCompleted()) {
+		gameCode = 2 ; //should end this game
 	}
+	else {
+		gameCode = 0 ;
+	}	
 }
 
 
 
 void Game::writeIndex(int x, int y, XO inp) {
     *(board[x][y]) = inp ;
+}
+
+Location* Game::findIndex(Location* loc, direction dir) {
+	if (dir == direction::right) {
+		if (((loc->x + 1) < boardSize) && (!(isWritten((loc->x + 1), loc->y)))) {
+			Location* rloc = new Location((loc->x + 1), loc->y) ;
+			return rloc ;
+		}
+		else {
+			return nullptr ;
+		}
+	}
+	else if (dir == direction::left) {
+		if (((loc->x - 1) >= 0) && (!(isWritten((loc->x - 1), loc->y)))) {
+			Location* rloc = new Location((loc->x - 1), loc->y) ;
+			return rloc ;
+		}
+		else {
+			return nullptr ;
+		}
+	}
+	else if (dir == direction::up) {
+		if (((loc->y - 1) >= 0) && (!(isWritten(loc->x, (loc->y - 1))))) {
+			Location* rloc = new Location(loc->x, (loc->y - 1)) ;
+			return rloc ;
+		}
+		else {
+			return nullptr ;
+		}
+	}
+	else if (dir == direction::down) {
+		if (((loc->y + 1) < rowSize) && (!(isWritten(loc->x, (loc->y + 1))))) {
+			Location* rloc = new Location(loc->x, (loc->y + 1)) ;
+			return rloc ;
+		}
+		else {
+			return nullptr ;
+		}
+	}
+	else if (dir == direction::upRight) {
+		if ((((loc->x + 1) < boardSize) && ((loc->y - 1) >= 0)) && (!(isWritten((loc->x + 1), (loc->y - 1))))) {
+			Location* rloc = new Location((loc->x + 1), (loc->y - 1)) ;
+			return rloc ;
+		}
+		else {
+			return nullptr ;
+		}
+	}
+	else if (dir == direction::upLeft) {
+		if ((((loc->x - 1) >= 0) && ((loc->y - 1) >= 0)) && (!(isWritten((loc->x - 1), (loc->y - 1))))) {
+			Location* rloc = new Location((loc->x - 1), (loc->y - 1)) ;
+			return rloc ;
+		}
+		else {
+			return nullptr ;
+		}
+	}
+	else if (dir == direction::downRight) {
+		if ((((loc->x + 1) < boardSize) && ((loc->y + 1) < rowSize)) && (!(isWritten((loc->x + 1), (loc->y + 1))))) {
+			Location* rloc = new Location((loc->x + 1), (loc->y + 1)) ;
+			return rloc ;
+		}
+		else {
+			return nullptr ;
+		}
+	}
+	else if (dir == direction::downLeft) {
+		if ((((loc->x - 1) >= 0) && ((loc->y + 1) < rowSize)) && (!(isWritten((loc->x - 1), (loc->y + 1))))) {
+			Location* rloc = new Location((loc->x - 1), (loc->y + 1)) ;
+			return rloc ;
+		}
+		else {
+			return nullptr ;
+		}
+	}
+	else {
+		cout << "Problem with writeIndex(Location...)" << endl ;
+		throw new exception() ;
+	}
 }
 
 void Game::writeAllIndex(XO xorO) {
@@ -381,7 +443,8 @@ void Game::resetGame() {
 	player0->setLastWritten() ; //sets to nullptr
 	player1->setLastWritten() ;
 	this->lastWritten = nullptr ;
-	corner_locs_free = true ;
+	destrVectors() ;
+	initVectors() ;
 	flushDatabase() ;
 	if (winPlayer != nullptr) {
 		if (winPlayer == player0) {
@@ -412,14 +475,16 @@ bool Game::checkLocations() {
 	bool ret = false ;
     for (int i = 0 ; i < maxSize ; i++) {
 		if (((board[i][0])->getXO()) != blank) {
-			if (((board[i][0])->getAllXOType()) != nullptr) {
+			XO xo = (board[i][0])->getXO() ;
+			if ((SmartXO::getAllLoc(xo)) != nullptr) {
 				Location here = (board[i][0])->getLocation() ;
-				XO xo_here = (board[i][0])->getXO() ;
-				//<-
-				vector<Location> *elsewhere = (board[i][0])->getAllXOType() ;
-				ret = findPattern(here, elsewhere, direction::null, 0, (maxSize-1)) ;
+				vector<Location> *elsewhere = SmartXO::getAllLoc(xo) ;
+				Navigator *nav = new Navigator() ;
+				nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
+				Navigator *searched = findSequence(here, nav, elsewhere, (maxSize-1)) ;
+				ret = searched->b ; //we will search across the array (maxsize - 1)
 				if (ret == true) {
-					winningXO = xo_here ;
+					winningXO = xo ;
 					return ret ;
 				}
 			}
@@ -427,14 +492,17 @@ bool Game::checkLocations() {
     }
 	for (int i = 0 ; i < maxSize ; i++) {
 		if (((board[0][i])->getXO()) != blank) {
-			if (((board[0][i])->getAllXOType()) != nullptr) {
+			XO xo = (board[0][i])->getXO() ;
+			if ((SmartXO::getAllLoc(xo)) != nullptr) {
 				Location here = (board[0][i])->getLocation() ;
 				XO xo_here = (board[0][i])->getXO() ;
-				vector<Location> *elsewhere = (board[0][i])->getAllXOType() ;
-				ret = findPattern(here, elsewhere, direction::null, 0, (maxSize-1)) ; //we will search across the array (maxsize - 1)
+				vector<Location> *elsewhere = SmartXO::getAllLoc(xo) ;
+				Navigator *nav = new Navigator() ;
+				nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
+				Navigator *searched = findSequence(here, nav, elsewhere, (maxSize-1)) ;
+				ret = searched->b ; //we will search across the array (maxsize - 1)
 				if (ret == true) {
 					winningXO = xo_here ;
-					
 					return ret ;
 				}
 			}
@@ -443,60 +511,87 @@ bool Game::checkLocations() {
 	return ret ;
 }
 
-bool Game::findPattern(Location here, vector<Location>* elseWhere, direction d, unsigned lengthSearched, unsigned maxSearch) {
+Navigator* Game::findSequence(Location here, Navigator* nav, vector<Location>* elseWhere, unsigned maxSearch) {
 	
-    if (lengthSearched >= maxSearch) {
-        return true ;
+    if (nav->lengthSearched >= maxSearch) {
+		nav->b = true ;
+        return nav ;
     }
-	if ((d == direction::null) || (d == direction::right)) { // then search right next...
-		Location *loc = (locSearch(here, elseWhere, 1, 0)) ;
-		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::right, (lengthSearched + 1), maxSearch) ;
+	if ((nav->dir == direction::null) || (nav->dir == direction::right)) { // then search right next...
+		Location *nearby = (locSearch(here, elseWhere, 1, 0)) ;
+		if (nearby != nullptr) {
+			nav->lengthSearched++ ;
+			nav->loc = nearby ;
+			nav->dir = direction::right ;
+			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
 		}
 	}
-	if ((d == direction::null) || (d == direction::left)) {
-		Location *loc = (locSearch(here, elseWhere, -1, 0)) ;
-		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::left, (lengthSearched + 1), maxSearch) ;
+	if ((nav->dir == direction::null) || (nav->dir == direction::left)) {
+		Location *nearby = (locSearch(here, elseWhere, -1, 0)) ;
+		if (nearby != nullptr) {
+			nav->lengthSearched++ ;
+			nav->loc = nearby ;
+			nav->dir = direction::left ;
+			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
 		}
 	}
-	if ((d == direction::null) || (d == direction::up)) {
-		Location *loc = (locSearch(here, elseWhere, 0, -1)) ;
-		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::up, (lengthSearched + 1), maxSearch) ;
+	if ((nav->dir == direction::null) || (nav->dir == direction::up)) {
+		Location *nearby = (locSearch(here, elseWhere, 0, -1)) ;
+		if (nearby != nullptr) {
+			nav->lengthSearched++ ;
+			nav->loc = nearby ;
+			nav->dir = direction::up ;
+			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
 		}
 	}
-	if ((d == direction::null) || (d == direction::down)) {
-		Location *loc = (locSearch(here, elseWhere, 0, 1)) ;
-		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::down, (lengthSearched + 1), maxSearch) ;
+	if ((nav->dir == direction::null) || (nav->dir == direction::down)) {
+		Location *nearby = (locSearch(here, elseWhere, 0, 1)) ;
+		if (nearby != nullptr) {
+			nav->lengthSearched++ ;
+			nav->loc = nearby ;
+			nav->dir = direction::down ;
+			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
 		}
 	}
-	if ((d == direction::null) || (d == direction::upRight)) {
-		Location *loc = (locSearch(here, elseWhere, 1, -1)) ;
-		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::upRight, (lengthSearched + 1), maxSearch) ;
+	if ((nav->dir == direction::null) || (nav->dir == direction::upRight)) {
+		Location *nearby = (locSearch(here, elseWhere, 1, -1)) ;
+		if (nearby != nullptr) {
+			nav->lengthSearched++ ;
+			nav->loc = nearby ;
+			nav->dir = direction::upRight ;
+			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
 		}
 	}
-	if ((d == direction::null) || (d == direction::upLeft)) {
-		Location *loc = (locSearch(here, elseWhere, -1, -1)) ;
-		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::upLeft, (lengthSearched + 1), maxSearch) ;
+	if ((nav->dir == direction::null) || (nav->dir == direction::upLeft)) {
+		Location *nearby = (locSearch(here, elseWhere, -1, -1)) ;
+		if (nearby != nullptr) {
+			nav->lengthSearched++ ;
+			nav->loc = nearby ;
+			nav->dir = direction::upLeft ;
+			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
 		}
 	}
-	if ((d == direction::null) || (d == direction::downRight)) {
-		Location *loc = (locSearch(here, elseWhere, 1, 1)) ;
-		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::downRight, (lengthSearched + 1), maxSearch) ;
+	if ((nav->dir == direction::null) || (nav->dir == direction::downRight)) {
+		Location *nearby = (locSearch(here, elseWhere, 1, 1)) ;
+		if (nearby != nullptr) {
+			nav->lengthSearched++ ;
+			nav->loc = nearby ;
+			nav->dir = direction::downRight ;
+			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
 		}
 	}
-	if ((d == direction::null) || (d == direction::downLeft)) {
-		Location *loc = (locSearch(here, elseWhere, -1, 1)) ;
-		if (loc != nullptr) {
-			return findPattern(*loc, elseWhere, direction::downLeft, (lengthSearched + 1), maxSearch) ;
+	if ((nav->dir == direction::null) || (nav->dir == direction::downLeft)) {
+		Location *nearby = (locSearch(here, elseWhere, -1, 1)) ;
+		if (nearby != nullptr) {
+			nav->lengthSearched++ ;
+			nav->loc = nearby ;
+			nav->dir = direction::downLeft ;
+			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
 		}
 	}
-	return false ;
+	nav->b = false ;
+	return nav ;
+	
 }
 
 Location* Game::locSearch(Location here, vector<Location>* elseWhere, int x_offset, int y_offset) {
@@ -543,6 +638,62 @@ string Game::getGameLog() {
 	stringstream *tempLog = new stringstream() ;
 	*tempLog << currentGameLog->rdbuf() ;
     return tempLog->str() ;
+}
+
+void Game::initVectors() {
+	freeLocations = nullptr ;
+	freeCorners = nullptr ;
+	corners = new vector<Location*>() ;
+	corners->push_back(new Location(0, 0)) ;
+	corners->push_back(new Location(0, rowSize-1)) ;
+	corners->push_back(new Location(boardSize-1, 0)) ;
+	corners->push_back(new Location (boardSize-1, rowSize-1)) ;
+}
+
+void Game::destrVectors() {
+	delete freeLocations ;
+	delete freeCorners ;
+	delete corners ;
+}
+
+void Game::updateFreeLocations() { //updates freeCorners as well
+	if (freeLocations == nullptr) {
+		freeLocations = new vector<Location*>() ;
+		for (int i = 0; i < boardSize ; i++) {
+			for (int j = 0; j < rowSize; j++) {
+				if (!(isWritten(i, j))) {
+					Location *l = new Location(i, j) ;
+					freeLocations->push_back(l) ;
+				}
+			}
+		}
+	}
+	if (freeCorners == nullptr) {
+		freeCorners = new vector<Location*>() ;
+		for (vector<Location*>::size_type i = 0 ; i < freeLocations->size() ; i++) {
+			for (vector<Location*>::size_type j = 0 ; j < corners->size() ; j++) {
+				if (freeLocations->at(i)->equals(corners->at(j))) {
+					freeCorners->push_back(freeLocations->at(i)) ;
+				}
+			}
+		}
+	}
+	if (lastWritten != nullptr) {
+		for (vector<Location*>::size_type i = 0 ; i < freeLocations->size() ; i++) {
+			if ((freeLocations->at(i))->equals(lastWritten)) {
+				freeLocations->erase(freeLocations->begin() + i) ;
+			}
+			if (i < freeCorners->size()) {
+				if ((freeCorners->at(i))->equals(lastWritten)) {
+					freeCorners->erase(freeCorners->begin() + i) ;
+				}
+			}
+		}
+	}
+}
+
+bool Game::cornersFree() {
+	return (freeCorners->size() > 0) ;
 }
 
 

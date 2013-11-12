@@ -32,6 +32,13 @@ enum direction {
 	downLeft
 } ;
 
+struct Navigator {
+	direction dir ;
+	bool b ; //true = there is a straight line of X or Os
+	Location *loc ; //the coordinates at the end of the straight line
+	unsigned lengthSearched ;
+};
+
 class Game : public SmartXO {
     
 protected:
@@ -57,12 +64,13 @@ protected:
 	Player thisPlayer() ;
 	Player otherPlayer() ;
 	
-	vector<Location*>* free_locs ;
-	vector<Location*>* corner_locs ;
-	bool corner_locs_free = true ; //there are still corners that haven't been written
-	
-	void initLocVectors() ;
-	
+	vector<Location*>* corners ;
+	vector<Location*>* freeLocations ;
+	vector<Location*>* freeCorners ;
+	void updateFreeLocations() ; //updates freeCorners as well
+	bool cornersFree() ; //there are still corners that haven't been written
+	void initVectors() ; //initializes other helper vectors - help keep track of state
+	void destrVectors() ;
 	
 	int gamesPlayed ;
     
@@ -92,7 +100,8 @@ protected:
 	
 	void checkWin() ;
 	bool checkLocations() ;
-	bool findPattern(Location, vector<Location>*, direction, unsigned lengthSearched, unsigned maxSearch) ; //takes a direction in which to recursively search for a straight line of Xs or Os. unsigned lengthSearched keeps track of how far we've searched, unsigned maxSearch sets the limit on the length of our search
+	Navigator* findSequence(Location, Navigator*, vector<Location>*, unsigned) ; //takes a direction in which to recursively search for a straight line of Xs or Os. nav.lengthSearched keeps track of how far we've searched, unsigned maxSearch sets the limit on the length of our search (Note: nav should be passed in with its loc member set to nullptr, and its direction member set to direction::null. end will be returned with its loc member set to the coordinates at the end of the X or O sequence, assuming it finds one. If not, it will return with it's bool member set to false)
+	
 	Location* locSearch(Location, vector<Location>*, int, int) ; //searches through vector of locations to find any that are 1 unit away
 	
 	void aiAction() ; //AI function to choose the next spot to place X or O
@@ -110,13 +119,16 @@ public:
     
     char getIndex(int, int) ;
     XO getIndexAsXO(int, int) ;
-	bool isWritten(int, int) ;
+	bool isWritten(int, int) ; //returns true if this space has an X or O. Ignores blank or nullxo
 	
 	
     
-    void writeIndex(int, int, XO) ; //returns 0 if no issues, 1 if unwrittable, 2 if game complete
-    void gameEvent(int, int) ;
+    void writeIndex(int, int, XO) ;
+	
+	Location* findIndex(Location*, direction) ; //takes a location as a starting point, then follows the specified direction to set the player write flags to the appropriate index (e.g. direction::up will writeIndex(x, y-1)). Returns location if writable with no issues, returns nullptr if index out of bounds or already written
+	
     void manageGame() ;
+	void gameEvent() ;
 	
 	//These functions (or the one below, or any other similar one) is responsible for controlling whether the currentPlayer behaves as an true AI, a simple random # generator, or takes input from a human
     void playSimGame() ; //plays as a simulated human that randomly generates choices (not true AI) - pitted against a true AI player. One player must be specified as human in the constructor, the other as non-human (false)

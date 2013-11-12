@@ -43,7 +43,8 @@ public:
 	XO getXO() ;
 	static char getXOChar(XO) ;
 	
-	vector<Location>* getAllXOType() ; //returns array of locations of smartXO objects same XO type (not including blank) as this
+	static vector<Location>* getAllLoc(XO) ; //returns array of locations of smartXO objects same XO type (not including blank) as this
+	static vector<SmartXO*>* getAllXO(XO) ; //returns all sXO objects that are on_board and of the specified XO type
 	
 	bool compXO(XO, XO) ;
 } ;
