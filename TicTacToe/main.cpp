@@ -7,18 +7,23 @@
 //
 
 #include <iostream>
+#include <time.h>
 #include "sstream"
 
 #include "Game.h"
 #include "Player.h"
-//#include "XO.h"
+#include "Util.h"
 
 using namespace std ;
 
 int main(int argc, const char * argv[]) {
 	
+	pause(2) ;
 	
-
+	cout << "Hi" << endl ;
+	
+	
+	cout << "hey" << endl ;
 
     Game *g = new Game(false, true, false, "Adam") ;
 	

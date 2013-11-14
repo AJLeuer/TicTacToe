@@ -24,6 +24,7 @@ protected:
 	bool human ; //is this player human controlled or computer controlled, default behavior is to set to true (if not specified otherwise in constructor arg)
 	Location *nextSpace ; //an x and y coordinate that gives signifies the player or random generator's next choice
 	Location *lastWritten ;
+	unsigned turns = 0 ; //counter
 	
 public:
 	Player() ;
@@ -31,11 +32,20 @@ public:
 	Player(string, bool) ;
 	Player(string, XO, bool) ;
 	
+	
+	
+	
+	void incTurns() { turns++ ; } //increments turns by 1
+	void resetTurns() { turns = 0 ; }
+	unsigned getTurns() { return this->turns ; }
+	
 	void setXO(XO) ;
 	XO getXO() { return xorO ; }
 	char getXOChar() ;
+	
 	void setName(string) ;
 	string getName() ;
+	
 	bool isHuman() { return human ; } //else is AI
 	
 	void setNextSpace(int, int) ;

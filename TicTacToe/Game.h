@@ -44,6 +44,8 @@ class Game : public SmartXO {
 protected:
     SmartXO* board[(unsigned)3][(unsigned)3] ;
 	
+	
+	
 	 //the larger of the rows or columns (in case they were ever different)
 	unsigned boardSize ;
     unsigned rowSize ;
@@ -100,7 +102,10 @@ protected:
 	
 	void checkWin() ;
 	bool checkLocations() ;
-	Navigator* findSequence(Location, Navigator*, vector<Location>*, unsigned) ; //takes a direction in which to recursively search for a straight line of Xs or Os. nav.lengthSearched keeps track of how far we've searched, unsigned maxSearch sets the limit on the length of our search (Note: nav should be passed in with its loc member set to nullptr, and its direction member set to direction::null. end will be returned with its loc member set to the coordinates at the end of the X or O sequence, assuming it finds one. If not, it will return with it's bool member set to false)
+	
+	/*takes a direction in which to recursively search for a straight line of Xs or Os. nav.lengthSearched keeps track of how far we've searched, unsigned maxSearch sets the limit on the length of our search (Note: nav should be passed in with its loc member set to nullptr, and its direction member set to direction::null. end will be returned with its loc member set to the coordinates at the end of the X or O sequence, assuming it finds one. If not, it will return with it's bool member set to false). offset must be set to 1 to search for a sequence (setting to other integer values can allow this function to perform other tasks, like finding a matching XO on the other side of the array)
+	 */
+	Navigator* findSequence(Location, Navigator*, vector<Location>*, int, unsigned) ; //
 	
 	Location* locSearch(Location, vector<Location>*, int, int) ; //searches through vector of locations to find any that are 1 unit away
 	
@@ -121,11 +126,11 @@ public:
     XO getIndexAsXO(int, int) ;
 	bool isWritten(int, int) ; //returns true if this space has an X or O. Ignores blank or nullxo
 	
-	
-    
     void writeIndex(int, int, XO) ;
 	
-	Location* findIndex(Location*, direction) ; //takes a location as a starting point, then follows the specified direction to set the player write flags to the appropriate index (e.g. direction::up will writeIndex(x, y-1)). Returns location if writable with no issues, returns nullptr if index out of bounds or already written
+	Location* findIndex(Location*, direction, int) ; //takes a location as a starting point, then follows the specified direction to return the appropriate location (e.g. direction::up will return (x, y-1)). Returns a location if that location is writable with no issues, returns nullptr if index out of bounds or already written
+	direction reverse(direction) ;
+	bool openSequence(vector<Location>* thisPlSpots, vector<Location>* oppPlSpots, Location check) ; //returns true if there are no opposing players XO in between the current players already placed XOs and the desired spot, false if there are
 	
     void manageGame() ;
 	void gameEvent() ;
@@ -144,9 +149,10 @@ public:
 	
 } ;
 
-static unsigned ceiling(unsigned, unsigned) ;
+static int ceiling(int, int) ;
+static int floor(int, int) ;
 
-void pause(int seconds) ;
+
 
 
 

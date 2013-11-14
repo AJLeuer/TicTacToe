@@ -210,42 +210,112 @@ void Game::playSimGame() {
 
 void Game::playGameRtime() {
 	currentGameLog = &cout ;
-	
-	*currentGameLog << "hi" << endl ;
 	//todo implement
 }
 
 void Game::aiAction() {
-	XO xo = currentPlayer->getXO() ;
-	vector<Location>* allSpots = SmartXO::getAllLoc(xo) ;
-	if (allSpots != nullptr) {
+	
+	bool decisionMade = false ;
+	XO myxo = currentPlayer->getXO() ;
+	vector<Location>* thisPlSpots = SmartXO::getAllLoc(myxo) ;
+	XO oppxo = nextPlayer->getXO() ;
+	vector<Location>* oppPlSpots = SmartXO::getAllLoc(oppxo) ;
+	
+	if ((oppPlSpots != nullptr) && (decisionMade == false)) { //if the opposing player has 2 in a row we will set our next space to be the end of that sequence
+		
 		Navigator *nav = new Navigator() ;
 		Navigator *searched = nullptr ;
-		nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
-		for (vector<SmartXO*>::size_type i = 0 ; i < allSpots->size() ; i++) {
-			searched = findSequence(allSpots->at(i), nav, allSpots, 1) ; // we will search for a line of at any two of our X or Os in a row (arg 1 here really means 2 in a row - start at 0, add 1 if we find a second in line with it)
+		for (vector<SmartXO*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
+			nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
+			searched = findSequence(oppPlSpots->at(i), nav, oppPlSpots, 1, 1) ;
 			if (searched->b == true) {
-				Location *l = findIndex(searched->loc, searched->dir) ;
-				if (l != nullptr) {
-					currentPlayer->setNextSpace(l->x, l->y) ;
+				Location *loc1 = findIndex(searched->loc, searched->dir, 1) ;
+				Location *loc2 = findIndex(searched->loc, reverse(searched->dir), (searched->lengthSearched +1)) ;
+				if (loc1 != nullptr) {
+					currentPlayer->setNextSpace(loc1->x, loc1->y) ;
+					decisionMade = true ;
+					break ;
+				}
+				else if (loc2 != nullptr) {
+					currentPlayer->setNextSpace(loc2->x, loc2->y) ;
+					decisionMade = true ;
 					break ;
 				}
 			}
 		}
 	}
-	//vector<Location> *elsewhere = (board[i][0])->getAllLoc() ;
-	//ret = findSequence(here, elsewhere, direction::null, 0, (maxSize-1)) ;
-	else if (cornersFree()){
-		int r = std::rand() % freeCorners->size() ;
-		vector<Location*>::iterator it = freeCorners->begin();
-		std::advance(it, r);
-		Location *l = it.operator*() ;
-		currentPlayer->setNextSpace(l->x, l->y) ;
+	if ((oppPlSpots != nullptr) && (decisionMade == false)) { //if the opposing player has X or Os on opposite sides of the boards, we will set out next write to be in between
+		Navigator *nav = new Navigator() ;
+		Navigator *searched = nullptr ;
+		nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
+		for (vector<SmartXO*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
+			Location l = (oppPlSpots->at(i)) ;
+			if (((l.x == 0) || (l.x == (boardSize-1))) || ((l.y == 0) || (l.y == (rowSize-1)))) {
+				searched = findSequence(l, nav, oppPlSpots, (maxSize-1), (maxSize-1)) ;
+				if (searched->b == true) {
+					Location* locn = findIndex(searched->loc, reverse(searched->dir), 1) ;
+					if (locn != nullptr) {
+						currentPlayer->setNextSpace(locn->x, locn->y) ;
+						decisionMade = true ;
+						break ;
+					}
+				}
+			}
+		}
 	}
-	else if (!(cornersFree())) {
+	
+	if ((thisPlSpots != nullptr) && (decisionMade == false)) { //if we have two in a row already this behavior fills in the last space
+		Navigator *nav = new Navigator() ;
+		Navigator *searched = nullptr ;
+		nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
+		for (vector<SmartXO*>::size_type i = 0 ; i < thisPlSpots->size() ; i++) {
+			searched = findSequence(thisPlSpots->at(i), nav, thisPlSpots, 1, 1) ; // we will search for a line of at any two of our X or Os in a row (arg 1 here really means 2 in a row - start at 0, add 1 if we find a second in line with it)
+			if (searched->b == true) {
+				Location *locn = findIndex(searched->loc, searched->dir, 1) ;
+				if (locn != nullptr) {
+					currentPlayer->setNextSpace(locn->x, locn->y) ;
+					decisionMade = true ;
+					break ;
+				}
+			}
+		}
+	}
+	if ((thisPlSpots != nullptr) && (decisionMade == false)) { //this behavior searches to find a location in between currentPlayer's X or O, and sets it to be written
+		Navigator *nav = new Navigator() ;
+		Navigator *searched = nullptr ;
+		nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
+		for (vector<SmartXO*>::size_type i = 0 ; i < thisPlSpots->size() ; i++) {
+			Location l = (thisPlSpots->at(i)) ;
+			if (((l.x == 0) || (l.x == (boardSize-1))) || ((l.y == 0) || (l.y == (rowSize-1)))) {
+				searched = findSequence(l, nav, thisPlSpots, (maxSize-1), (maxSize-1)) ;
+				if (searched->b == true) {
+					Location* locn = findIndex(searched->loc, reverse(searched->dir), 1) ;
+					if (locn != nullptr) {
+						currentPlayer->setNextSpace(locn->x, locn->y) ;
+						decisionMade = true ;
+						break ;
+					}
+				}
+			}
+		}
+	}
+	if ((cornersFree()) && (decisionMade == false)) {
+		while (decisionMade == false) {
+			int r = std::rand() % freeCorners->size() ;
+			vector<Location*>::iterator it = freeCorners->begin();
+			std::advance(it, r);
+			Location *l = it.operator*() ;
+			if (!(isWritten(l->x, l->y))) {
+				decisionMade = true ;
+				currentPlayer->setNextSpace(l->x, l->y) ;
+			}
+		}
+	}
+	if ((!(cornersFree())) && (decisionMade == false)) {
 		unsigned center = (boardSize/2) ;
 		unsigned middle = (rowSize/2) ;
 		if (!(isWritten(center, middle))) {
+			decisionMade = true ;
 			currentPlayer->setNextSpace(center, middle) ;
 		}
 		
@@ -277,9 +347,21 @@ void Game::manageGame() {
 	/*this block, up to gameEvent(), will handle all possible combinations of player opponents. Human vs human, human vs ai, ai vs ai, etc. Since gameEvent() switches the *currentPlayer pointer each time, we don't have to worry about specifying which player we're working with
 	 */
 	if (currentPlayer->isHuman()) { //we may change this to take console input from a player
-		int x = rand() % 3 ;
-		int y = rand() % 3 ;
-		currentPlayer->setNextSpace(x, y) ;
+		
+		if (currentPlayer->getTurns() == 0) {
+			currentPlayer->setNextSpace(1, 1) ;
+		}
+		else if (currentPlayer->getTurns() == 1) {
+			currentPlayer->setNextSpace(2, 1) ;
+		}
+		else if (currentPlayer->getTurns() == 2) {
+			currentPlayer->setNextSpace(1, 2) ;
+		}
+		else {
+			int x = rand() % 3 ;
+			int y = rand() % 3 ;
+			currentPlayer->setNextSpace(x, y) ;
+		}
 	}
 	else if (!(currentPlayer->isHuman())) {
 		aiAction() ;
@@ -290,11 +372,11 @@ void Game::manageGame() {
 	
 	checkWin() ;
 	
-	if ((gameCode == 0) && (!(winner == true))) {
+	if ((gameCode == 0) && (!(winner == true))) { //this loop placed a new XO on the board, so we'll go to the next turn
 		*currentGameLog << toString() << endl << endl  ;
 	}
-	else if (gameCode == 1) {
-		; //that index was written, we'll try again
+	else if (gameCode == 1) { //that index was written, we'll try again
+		;
 	}
 	else if (gameCode == 3) {
 		cout << "Problem with gameEvent() function. debug" << endl ;
@@ -320,19 +402,20 @@ void Game::gameEvent() {
 	else if (isWritten(p->x, p->y)) {
 		gameCode = 1 ;
 	}
-	writeIndex(p->x, p->y, currentPlayer->getXO()) ;
-	currentPlayer->setLastWritten(p->x, p->y) ;
-	delete this->lastWritten ;
-	this->lastWritten = new Location(p->x, p->y) ;
-	tempPlayer = currentPlayer ;
-	currentPlayer = nextPlayer ;
-	nextPlayer = tempPlayer ;
+	else if (!(isWritten(p->x, p->y))) {
+		writeIndex(p->x, p->y, currentPlayer->getXO()) ;
+		currentPlayer->incTurns() ;
+		currentPlayer->setLastWritten(p->x, p->y) ;
+		delete this->lastWritten ;
+		this->lastWritten = new Location(p->x, p->y) ;
+		tempPlayer = currentPlayer ;
+		currentPlayer = nextPlayer ;
+		nextPlayer = tempPlayer ;
+		gameCode = 0 ;
+	}
 	if (checkSetCompleted()) {
 		gameCode = 2 ; //should end this game
 	}
-	else {
-		gameCode = 0 ;
-	}	
 }
 
 
@@ -341,10 +424,10 @@ void Game::writeIndex(int x, int y, XO inp) {
     *(board[x][y]) = inp ;
 }
 
-Location* Game::findIndex(Location* loc, direction dir) {
+Location* Game::findIndex(Location* loc, direction dir, int offset) {
 	if (dir == direction::right) {
-		if (((loc->x + 1) < boardSize) && (!(isWritten((loc->x + 1), loc->y)))) {
-			Location* rloc = new Location((loc->x + 1), loc->y) ;
+		if (((loc->x + offset) < boardSize) && (!(isWritten((loc->x + offset), loc->y)))) {
+			Location* rloc = new Location((loc->x + offset), loc->y) ;
 			return rloc ;
 		}
 		else {
@@ -352,8 +435,8 @@ Location* Game::findIndex(Location* loc, direction dir) {
 		}
 	}
 	else if (dir == direction::left) {
-		if (((loc->x - 1) >= 0) && (!(isWritten((loc->x - 1), loc->y)))) {
-			Location* rloc = new Location((loc->x - 1), loc->y) ;
+		if (((loc->x - offset) >= 0) && (!(isWritten((loc->x - offset), loc->y)))) {
+			Location* rloc = new Location((loc->x - offset), loc->y) ;
 			return rloc ;
 		}
 		else {
@@ -361,8 +444,8 @@ Location* Game::findIndex(Location* loc, direction dir) {
 		}
 	}
 	else if (dir == direction::up) {
-		if (((loc->y - 1) >= 0) && (!(isWritten(loc->x, (loc->y - 1))))) {
-			Location* rloc = new Location(loc->x, (loc->y - 1)) ;
+		if (((loc->y - offset) >= 0) && (!(isWritten(loc->x, (loc->y - offset))))) {
+			Location* rloc = new Location(loc->x, (loc->y - offset)) ;
 			return rloc ;
 		}
 		else {
@@ -370,8 +453,8 @@ Location* Game::findIndex(Location* loc, direction dir) {
 		}
 	}
 	else if (dir == direction::down) {
-		if (((loc->y + 1) < rowSize) && (!(isWritten(loc->x, (loc->y + 1))))) {
-			Location* rloc = new Location(loc->x, (loc->y + 1)) ;
+		if (((loc->y + offset) < rowSize) && (!(isWritten(loc->x, (loc->y + offset))))) {
+			Location* rloc = new Location(loc->x, (loc->y + offset)) ;
 			return rloc ;
 		}
 		else {
@@ -379,8 +462,8 @@ Location* Game::findIndex(Location* loc, direction dir) {
 		}
 	}
 	else if (dir == direction::upRight) {
-		if ((((loc->x + 1) < boardSize) && ((loc->y - 1) >= 0)) && (!(isWritten((loc->x + 1), (loc->y - 1))))) {
-			Location* rloc = new Location((loc->x + 1), (loc->y - 1)) ;
+		if ((((loc->x + offset) < boardSize) && ((loc->y - offset) >= 0)) && (!(isWritten((loc->x + offset), (loc->y - offset))))) {
+			Location* rloc = new Location((loc->x + offset), (loc->y - offset)) ;
 			return rloc ;
 		}
 		else {
@@ -388,8 +471,8 @@ Location* Game::findIndex(Location* loc, direction dir) {
 		}
 	}
 	else if (dir == direction::upLeft) {
-		if ((((loc->x - 1) >= 0) && ((loc->y - 1) >= 0)) && (!(isWritten((loc->x - 1), (loc->y - 1))))) {
-			Location* rloc = new Location((loc->x - 1), (loc->y - 1)) ;
+		if ((((loc->x - offset) >= 0) && ((loc->y - offset) >= 0)) && (!(isWritten((loc->x - offset), (loc->y - offset))))) {
+			Location* rloc = new Location((loc->x - offset), (loc->y - offset)) ;
 			return rloc ;
 		}
 		else {
@@ -397,8 +480,8 @@ Location* Game::findIndex(Location* loc, direction dir) {
 		}
 	}
 	else if (dir == direction::downRight) {
-		if ((((loc->x + 1) < boardSize) && ((loc->y + 1) < rowSize)) && (!(isWritten((loc->x + 1), (loc->y + 1))))) {
-			Location* rloc = new Location((loc->x + 1), (loc->y + 1)) ;
+		if ((((loc->x + offset) < boardSize) && ((loc->y + offset) < rowSize)) && (!(isWritten((loc->x + offset), (loc->y + offset))))) {
+			Location* rloc = new Location((loc->x + offset), (loc->y + offset)) ;
 			return rloc ;
 		}
 		else {
@@ -406,8 +489,8 @@ Location* Game::findIndex(Location* loc, direction dir) {
 		}
 	}
 	else if (dir == direction::downLeft) {
-		if ((((loc->x - 1) >= 0) && ((loc->y + 1) < rowSize)) && (!(isWritten((loc->x - 1), (loc->y + 1))))) {
-			Location* rloc = new Location((loc->x - 1), (loc->y + 1)) ;
+		if ((((loc->x - offset) >= 0) && ((loc->y + offset) < rowSize)) && (!(isWritten((loc->x - offset), (loc->y + offset))))) {
+			Location* rloc = new Location((loc->x - offset), (loc->y + offset)) ;
 			return rloc ;
 		}
 		else {
@@ -418,6 +501,37 @@ Location* Game::findIndex(Location* loc, direction dir) {
 		cout << "Problem with writeIndex(Location...)" << endl ;
 		throw new exception() ;
 	}
+}
+
+direction Game::reverse(direction dir) {
+	if (dir == direction::right) {
+		return direction::left ;
+	}
+	else if (dir == direction::left) {
+		return direction::right ;
+	}
+	else if (dir == direction::up) {
+		return direction::down ;
+	}
+	else if (dir == direction::down) {
+		return direction::up ;
+	}
+	else if (dir == direction::upRight) {
+		return direction::downLeft ;
+	}
+	else if (dir == direction::upLeft) {
+		return direction::downRight ;
+	}
+	else if (dir == direction::downRight) {
+		return direction::upLeft ;
+	}
+	else /*if (dir == direction::downLeft) */ {
+		return direction::upRight ;
+	}
+}
+
+bool Game::openSequence(vector<Location>* thisPlSpots, vector<Location>* oppPlSpots, Location check) {
+	return false ;
 }
 
 void Game::writeAllIndex(XO xorO) {
@@ -438,6 +552,8 @@ void Game::resetGame() {
 	winningXO = nullxo ;
 	gameCode = 3 ;
 	writeAllIndex(blank) ;
+	player0->resetTurns() ;
+	player1->resetTurns() ;
 	player0->setNextSpace(maxSize+1, maxSize+1) ;
 	player1->setNextSpace(maxSize+1, maxSize+1) ;
 	player0->setLastWritten() ; //sets to nullptr
@@ -481,7 +597,7 @@ bool Game::checkLocations() {
 				vector<Location> *elsewhere = SmartXO::getAllLoc(xo) ;
 				Navigator *nav = new Navigator() ;
 				nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
-				Navigator *searched = findSequence(here, nav, elsewhere, (maxSize-1)) ;
+				Navigator *searched = findSequence(here, nav, elsewhere, 1, (maxSize-1)) ;
 				ret = searched->b ; //we will search across the array (maxsize - 1)
 				if (ret == true) {
 					winningXO = xo ;
@@ -499,7 +615,7 @@ bool Game::checkLocations() {
 				vector<Location> *elsewhere = SmartXO::getAllLoc(xo) ;
 				Navigator *nav = new Navigator() ;
 				nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
-				Navigator *searched = findSequence(here, nav, elsewhere, (maxSize-1)) ;
+				Navigator *searched = findSequence(here, nav, elsewhere, 1, (maxSize-1)) ;
 				ret = searched->b ; //we will search across the array (maxsize - 1)
 				if (ret == true) {
 					winningXO = xo_here ;
@@ -511,82 +627,82 @@ bool Game::checkLocations() {
 	return ret ;
 }
 
-Navigator* Game::findSequence(Location here, Navigator* nav, vector<Location>* elseWhere, unsigned maxSearch) {
+Navigator* Game::findSequence(Location here, Navigator* nav, vector<Location>* elseWhere, int offset, unsigned maxSearch) {
 	
     if (nav->lengthSearched >= maxSearch) {
 		nav->b = true ;
         return nav ;
     }
 	if ((nav->dir == direction::null) || (nav->dir == direction::right)) { // then search right next...
-		Location *nearby = (locSearch(here, elseWhere, 1, 0)) ;
+		Location *nearby = (locSearch(here, elseWhere, offset, 0)) ;
 		if (nearby != nullptr) {
-			nav->lengthSearched++ ;
+			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::right ;
-			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
+			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::left)) {
-		Location *nearby = (locSearch(here, elseWhere, -1, 0)) ;
+		Location *nearby = (locSearch(here, elseWhere, -offset, 0)) ;
 		if (nearby != nullptr) {
-			nav->lengthSearched++ ;
+			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::left ;
-			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
+			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::up)) {
-		Location *nearby = (locSearch(here, elseWhere, 0, -1)) ;
+		Location *nearby = (locSearch(here, elseWhere, 0, -offset)) ;
 		if (nearby != nullptr) {
-			nav->lengthSearched++ ;
+			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::up ;
-			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
+			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::down)) {
-		Location *nearby = (locSearch(here, elseWhere, 0, 1)) ;
+		Location *nearby = (locSearch(here, elseWhere, 0, offset)) ;
 		if (nearby != nullptr) {
-			nav->lengthSearched++ ;
+			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::down ;
-			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
+			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::upRight)) {
-		Location *nearby = (locSearch(here, elseWhere, 1, -1)) ;
+		Location *nearby = (locSearch(here, elseWhere, offset, -offset)) ;
 		if (nearby != nullptr) {
-			nav->lengthSearched++ ;
+			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::upRight ;
-			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
+			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::upLeft)) {
-		Location *nearby = (locSearch(here, elseWhere, -1, -1)) ;
+		Location *nearby = (locSearch(here, elseWhere, -offset, -offset)) ;
 		if (nearby != nullptr) {
-			nav->lengthSearched++ ;
+			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::upLeft ;
-			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
+			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::downRight)) {
-		Location *nearby = (locSearch(here, elseWhere, 1, 1)) ;
+		Location *nearby = (locSearch(here, elseWhere, offset, offset)) ;
 		if (nearby != nullptr) {
-			nav->lengthSearched++ ;
+			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::downRight ;
-			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
+			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::downLeft)) {
-		Location *nearby = (locSearch(here, elseWhere, -1, 1)) ;
+		Location *nearby = (locSearch(here, elseWhere, -offset, offset)) ;
 		if (nearby != nullptr) {
-			nav->lengthSearched++ ;
+			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::downLeft ;
-			return findSequence(*nearby, nav, elseWhere, maxSearch) ;
+			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
 		}
 	}
 	nav->b = false ;
@@ -697,20 +813,23 @@ bool Game::cornersFree() {
 }
 
 
-static unsigned ceiling(unsigned x, unsigned y) {
+static int ceiling(int x, int y) {
 	if (x > y) {
 		return x ;
 	}
 	else if (y > x) {
 		return y ;
 	}
-	else if(x == y) {
+	else {
 		return ((x+y)/2) ;
 	}
-	else {
-		cout << "problem with ceiling func" << endl ;
-		throw new exception() ;
+}
+
+static int floor(int x, int y) {
+	if (y < x) {
+		return y ;
 	}
+	return x ;
 }
 
 
