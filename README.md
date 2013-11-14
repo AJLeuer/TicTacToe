@@ -1,3 +1,0 @@
-TicTacToe
-=========
-//todo description
