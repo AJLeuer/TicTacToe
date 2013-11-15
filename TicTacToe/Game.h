@@ -67,23 +67,30 @@ protected:
 	Player otherPlayer() ;
 	
 	vector<Location*>* corners ;
+	vector<Location*>* edges ;
 	vector<Location*>* freeLocations ;
 	vector<Location*>* freeCorners ;
+	vector<Location*>* freeEdges ;
 	void updateFreeLocations() ; //updates freeCorners as well
 	bool cornersFree() ; //there are still corners that haven't been written
+	bool edgesFree() ;
+	bool isCorner(Location*) ;
+	bool isEdge(Location*) ;
 	void initVectors() ; //initializes other helper vectors - help keep track of state
 	void destrVectors() ;
 	
 	int gamesPlayed ;
     
     std::ostream *currentGameLog ; //record of current game
-    
+    std::stringstream *lastGameLog ;
+	
     vector<std::string> *allGamesLog ;
     
     bool player0IsX ;
     
     bool started ; //never assign started directly
-	bool winner ;
+	unsigned turns = 0 ;
+	bool winner ; //we have a winner
 	bool gameOver ; //an extra flag to help functions decide behavior based on game state, differs from completed in that it signifies the time period between the end of one game and the beginning of the next
 	
     bool checkStarted() ;
@@ -105,22 +112,26 @@ protected:
 	
 	/*takes a direction in which to recursively search for a straight line of Xs or Os. nav.lengthSearched keeps track of how far we've searched, unsigned maxSearch sets the limit on the length of our search (Note: nav should be passed in with its loc member set to nullptr, and its direction member set to direction::null. end will be returned with its loc member set to the coordinates at the end of the X or O sequence, assuming it finds one. If not, it will return with it's bool member set to false). offset must be set to 1 to search for a sequence (setting to other integer values can allow this function to perform other tasks, like finding a matching XO on the other side of the array)
 	 */
-	Navigator* findSequence(Location, Navigator*, vector<Location>*, int, unsigned) ; //
+	static Navigator* findSequence(Location, Navigator*, vector<Location>*, int, unsigned) ; //
 	
-	Location* locSearch(Location, vector<Location>*, int, int) ; //searches through vector of locations to find any that are 1 unit away
+	static Location* locSearch(Location, vector<Location>*, int, int) ; //searches through vector of locations to find any that are 1 unit away
 	
 	void aiAction() ; //AI function to choose the next spot to place X or O
 
 public:
     Game() ;
-	Game(bool, bool, string) ;
-    Game(bool, bool, bool, string) ; //allows for player input on name, X or O
-    Game(bool, bool, bool, string, string) ; //also allows player to choose first/second turn
+	Game(string) ; //for all constructors, passing in a string means p0 will be human
+    Game(bool, string) ; //allows for player input on name, X or O
+    Game(bool, string, string) ; //also allows player to choose first/second turn
     void initPlayers(bool, bool) ;
     void initPlayers(bool, bool, string, string) ;
     void initPlayers(bool, bool, bool, string, string) ;
 	
 	Player* idPlByXO(XO) ; //identifies player by their X or O
+	Player* getPlayer0() ;
+	Player* getPlayer1() ;
+	Player* getWinner() ;
+	bool winOrDraw = false ; //true if someone won last game, false it if was a draw
     
     char getIndex(int, int) ;
     XO getIndexAsXO(int, int) ;
@@ -129,14 +140,15 @@ public:
     void writeIndex(int, int, XO) ;
 	
 	Location* findIndex(Location*, direction, int) ; //takes a location as a starting point, then follows the specified direction to return the appropriate location (e.g. direction::up will return (x, y-1)). Returns a location if that location is writable with no issues, returns nullptr if index out of bounds or already written
-	direction reverse(direction) ;
+	static direction reverse(direction) ;
+	Location* getOpposite(Location*) ; //returns the mirror location on the other side of the board
 	bool openSequence(vector<Location>* thisPlSpots, vector<Location>* oppPlSpots, Location check) ; //returns true if there are no opposing players XO in between the current players already placed XOs and the desired spot, false if there are
 	
     void manageGame() ;
 	void gameEvent() ;
 	
 	//These functions (or the one below, or any other similar one) is responsible for controlling whether the currentPlayer behaves as an true AI, a simple random # generator, or takes input from a human
-    void playSimGame() ; //plays as a simulated human that randomly generates choices (not true AI) - pitted against a true AI player. One player must be specified as human in the constructor, the other as non-human (false)
+    void playGame() ; //plays as a simulated human that randomly generates choices (not true AI) - pitted against a true AI player. One player must be specified as human in the constructor, the other as non-human (false)
 	void playGameRtime() ;
 	
     
@@ -144,7 +156,6 @@ public:
     
     std::string toString() ; //returns game state as a string
     std::string getGameLog() ;
-    std::string getAllLogs() ;
     void printGameState() ;
 	
 } ;

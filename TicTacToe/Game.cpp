@@ -8,6 +8,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <vector>
 #include <time.h>
 
 #include "Game.h"
@@ -15,7 +16,6 @@
 using namespace std ;
 
 Game::Game() { //best for ai v ai
-    srand((unsigned)time(NULL)) ;
 	winner = false ;
 	gameCode = 3 ;
 	gamesPlayed = 0 ;
@@ -26,17 +26,16 @@ Game::Game() { //best for ai v ai
     setStarted(false) ;
 	this->lastWritten = nullptr ;
 	initVectors() ;
-    currentGameLog = new stringstream() ;
+	lastGameLog = nullptr ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
             board[i][j] = new SmartXO(blank, i, j, true) ;
         }
     }
-    initPlayers(true, true) ;
+    initPlayers(false, false) ;
 }
 
-Game::Game(bool p0Human, bool p1Human, string p0Name) {
-	srand((unsigned)time(NULL)) ;
+Game::Game(string p0Name) {
 	winner = false ;
 	gameCode = 3 ;
 	gamesPlayed = 0 ;
@@ -47,17 +46,16 @@ Game::Game(bool p0Human, bool p1Human, string p0Name) {
     setStarted(false) ;
 	this->lastWritten = nullptr ;
 	initVectors() ;
-    currentGameLog = new stringstream() ;
+	lastGameLog = nullptr ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
             board[i][j] = new SmartXO(blank, i, j, true) ;
         }
     }
-    initPlayers(p0Human, p1Human, p0Name, "Computer") ;
+    initPlayers(true, false, p0Name, "Computer") ;
 }
 
-Game::Game(bool player0WantsX, bool p0Human, bool p1Human, string p0Name) { //p v ai
-    srand((unsigned)time(NULL)) ;
+Game::Game(bool player0WantsX, string p0Name) { //p v ai
 	winner = false ;
 	gameCode = 3 ;
 	gamesPlayed = 0 ;
@@ -68,17 +66,16 @@ Game::Game(bool player0WantsX, bool p0Human, bool p1Human, string p0Name) { //p 
     setStarted(false) ;
 	this->lastWritten = nullptr ;
 	initVectors() ;
-    currentGameLog = new stringstream() ;
+	lastGameLog = nullptr ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
             board[i][j] = new SmartXO(blank, i, j, true) ;
         }
     }
-    initPlayers(player0WantsX, p0Human, p1Human, p0Name, "Computer") ;
+    initPlayers(player0WantsX, true, false, p0Name, "Computer") ;
 }
 
-Game::Game(bool player0WantsX, bool p0Human, bool p1Human, string p0Name, string p1Name) { //pvp
-    srand((unsigned)time(NULL)) ;
+Game::Game(bool player0WantsX, string p0Name, string p1Name) { //pvp
 	winner = false ;
 	gameCode = 3 ;
 	gamesPlayed = 0 ;
@@ -89,17 +86,17 @@ Game::Game(bool player0WantsX, bool p0Human, bool p1Human, string p0Name, string
     setStarted(false) ;
 	this->lastWritten = nullptr ;
 	initVectors() ;
-    currentGameLog = new stringstream() ;
+	lastGameLog = nullptr ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
             board[i][j] = new SmartXO(blank, i, j, true) ;
         }
 	}
-    initPlayers(player0WantsX, p0Human, p1Human, p0Name, p1Name) ;
+    initPlayers(player0WantsX, true, true, p0Name, p1Name) ;
 }
 
 void Game::initPlayers(bool p0Human, bool p1Human) { //auto-inits with preset names
-    initPlayers(p0Human, p1Human, "Player0", "Player1") ;
+    initPlayers(p0Human, p1Human, "Computer", "Computer 2") ;
 }
 
 void Game::initPlayers(bool p0Human, bool p1Human, string p0Name, string p1Name) {
@@ -109,7 +106,12 @@ void Game::initPlayers(bool p0Human, bool p1Human, string p0Name, string p1Name)
 
 void Game::initPlayers(bool player0WantsX, bool p0Human, bool p1Human, string p0Name, string p1Name) {
     player0 = new Player(p0Name, p0Human) ;
-    player1 = new Player(p1Name, p1Human) ;
+	if ((player0->getName() == "Computer") && (p1Human == false)) {
+		player1 = new Player("Computer 2", p1Human) ;
+	}
+	else {
+		player1 = new Player(p1Name, p1Human) ;
+	}
     
 	winPlayer = nullptr ;
 	lastWinner = nullptr ;
@@ -150,6 +152,21 @@ Player* Game::idPlByXO(XO Xo) {
 		cout << "check the idPlByXO() function" << endl ;
 		throw new exception() ;
 	}
+}
+
+Player* Game::getPlayer0() {
+	return player0 ;
+}
+
+Player* Game::getPlayer1() {
+	return player1 ;
+}
+
+Player* Game::getWinner() {
+	if (lastWinner == nullptr) {
+		return new Player("No one") ;
+	}
+	return this->lastWinner ;
 }
 
 char Game::getIndex(int x, int y) {
@@ -194,13 +211,13 @@ void Game::checkWin() {
 	bool won = checkLocations() ;
 	if (won) {
 		winPlayer = idPlByXO(winningXO) ;
+		winPlayer->incWins() ;
 	}
 	winner = won ;
 }
 
-void Game::playSimGame() {
+void Game::playGame() {
 	while(true) {
-		
 		manageGame() ;
 		if (gameOver) {
 			break ;
@@ -210,19 +227,95 @@ void Game::playSimGame() {
 
 void Game::playGameRtime() {
 	currentGameLog = &cout ;
-	//todo implement
+	while(true) {
+		manageGame() ;
+		if (gameOver) {
+			break ;
+		}
+	}
 }
 
 void Game::aiAction() {
 	
 	bool decisionMade = false ;
+	
 	XO myxo = currentPlayer->getXO() ;
 	vector<Location>* thisPlSpots = SmartXO::getAllLoc(myxo) ;
 	XO oppxo = nextPlayer->getXO() ;
 	vector<Location>* oppPlSpots = SmartXO::getAllLoc(oppxo) ;
 	
-	if ((oppPlSpots != nullptr) && (decisionMade == false)) { //if the opposing player has 2 in a row we will set our next space to be the end of that sequence
-		
+	bool counterOpenMove = ((currentPlayer->getTurns() == 0) && (nextPlayer->getTurns() == 1)) ;
+	bool first = ((currentPlayer->getTurns() == 0) && (nextPlayer->getTurns() == 0)) ;
+	Location* oppMove = (nextPlayer->getLastWritten()) ;
+	
+	if (counterOpenMove) { //we'll counter if the opponent is first
+		if (isEdge(oppMove) || isCorner(oppMove)) { //opener is edge or side
+			currentPlayer->setNextSpace((boardSize/2), (rowSize/2)) ;
+			decisionMade = true ;
+		}
+		else if (((oppMove->x) == (boardSize/2)) && ((oppMove->y) == (rowSize/2))) { //opener is center
+			while (decisionMade == false) {
+				int r = std::rand() % freeCorners->size() ;
+				vector<Location*>::iterator it = freeCorners->begin();
+				std::advance(it, r);
+				Location *l = it.operator*() ;
+				if (!(isWritten(l->x, l->y))) {
+					decisionMade = true ;
+					currentPlayer->setNextSpace(l->x, l->y) ;
+				}
+			}
+		}
+	}
+	else if (first) { //we're first, so we'll place a corner
+		while (decisionMade == false) {
+			int r = std::rand() % freeCorners->size() ;
+			vector<Location*>::iterator it = freeCorners->begin();
+			std::advance(it, r);
+			Location *l = it.operator*() ;
+			if (!(isWritten(l->x, l->y))) {
+				decisionMade = true ;
+				currentPlayer->setNextSpace(l->x, l->y) ;
+			}
+		}
+	}
+	
+	if ((thisPlSpots != nullptr) && (decisionMade == false)) { //WIN: if we have two in a row already this behavior fills in the last space
+		Navigator *nav = new Navigator() ;
+		Navigator *searched = nullptr ;
+		for (vector<SmartXO*>::size_type i = 0 ; i < thisPlSpots->size() ; i++) {
+			nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
+			searched = findSequence(thisPlSpots->at(i), nav, thisPlSpots, 1, 1) ; // we will search for a line of at any two of our X or Os in a row (arg 1 here really means 2 in a row - start at 0, add 1 if we find a second in line with it)
+			if (searched->b == true) {
+				Location *locn = findIndex(searched->loc, searched->dir, 1) ;
+				if (locn != nullptr) { //it will be nullptr if it's already written as well
+					currentPlayer->setNextSpace(locn->x, locn->y) ;
+					decisionMade = true ;
+					break ;
+				}
+			}
+		}
+	}
+	if ((thisPlSpots != nullptr) && (decisionMade == false)) { //WIN:this behavior searches to find a location in between two of currentPlayer's X or O, and sets it to be written
+		Navigator *nav = new Navigator() ;
+		Navigator *searched = nullptr ;
+		for (vector<SmartXO*>::size_type i = 0 ; i < thisPlSpots->size() ; i++) {
+			nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
+			Location l = (thisPlSpots->at(i)) ;
+			if (((l.x == 0) || (l.x == (boardSize-1))) || ((l.y == 0) || (l.y == (rowSize-1)))) {
+				searched = findSequence(l, nav, thisPlSpots, (maxSize-1), (maxSize-1)) ;
+				if (searched->b == true) {
+					Location* locn = findIndex(searched->loc, reverse(searched->dir), 1) ;
+					if (locn != nullptr) {
+						currentPlayer->setNextSpace(locn->x, locn->y) ;
+						decisionMade = true ;
+						break ;
+					}
+				}
+			}
+		}
+	}
+
+	if ((oppPlSpots != nullptr) && (decisionMade == false)) { //BLOCK: if the opposing player has 2 in a row we will set our next space to be the end of that sequence
 		Navigator *nav = new Navigator() ;
 		Navigator *searched = nullptr ;
 		for (vector<SmartXO*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
@@ -244,11 +337,11 @@ void Game::aiAction() {
 			}
 		}
 	}
-	if ((oppPlSpots != nullptr) && (decisionMade == false)) { //if the opposing player has X or Os on opposite sides of the boards, we will set out next write to be in between
+	if ((oppPlSpots != nullptr) && (decisionMade == false)) { //BLOCK: if the opposing player has X or Os on opposite sides of the boards, we will set our next write to be in between
 		Navigator *nav = new Navigator() ;
 		Navigator *searched = nullptr ;
-		nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
 		for (vector<SmartXO*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
+			nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
 			Location l = (oppPlSpots->at(i)) ;
 			if (((l.x == 0) || (l.x == (boardSize-1))) || ((l.y == 0) || (l.y == (rowSize-1)))) {
 				searched = findSequence(l, nav, oppPlSpots, (maxSize-1), (maxSize-1)) ;
@@ -263,43 +356,27 @@ void Game::aiAction() {
 			}
 		}
 	}
-	
-	if ((thisPlSpots != nullptr) && (decisionMade == false)) { //if we have two in a row already this behavior fills in the last space
-		Navigator *nav = new Navigator() ;
-		Navigator *searched = nullptr ;
-		nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
-		for (vector<SmartXO*>::size_type i = 0 ; i < thisPlSpots->size() ; i++) {
-			searched = findSequence(thisPlSpots->at(i), nav, thisPlSpots, 1, 1) ; // we will search for a line of at any two of our X or Os in a row (arg 1 here really means 2 in a row - start at 0, add 1 if we find a second in line with it)
-			if (searched->b == true) {
-				Location *locn = findIndex(searched->loc, searched->dir, 1) ;
-				if (locn != nullptr) {
-					currentPlayer->setNextSpace(locn->x, locn->y) ;
+	if ((!(first)) && (decisionMade == false)) { //CENTER
+		unsigned center = (boardSize/2) ;
+		unsigned middle = (rowSize/2) ;
+		if (!(isWritten(center, middle))) {
+			decisionMade = true ;
+			currentPlayer->setNextSpace(center, middle) ;
+		}
+	}
+	if (decisionMade == false) { //OPPOSITE CORNER: if the opponent is in the opposite corner, we block
+		for (vector<SmartXO*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
+			if (isCorner(&(oppPlSpots->at(i)))) {
+				Location *loc = getOpposite(&(oppPlSpots->at(i))) ;
+				if (!(isWritten(loc->x, loc->y))) {
 					decisionMade = true ;
+					currentPlayer->setNextSpace(loc->x, loc->y) ;
 					break ;
 				}
 			}
 		}
 	}
-	if ((thisPlSpots != nullptr) && (decisionMade == false)) { //this behavior searches to find a location in between currentPlayer's X or O, and sets it to be written
-		Navigator *nav = new Navigator() ;
-		Navigator *searched = nullptr ;
-		nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
-		for (vector<SmartXO*>::size_type i = 0 ; i < thisPlSpots->size() ; i++) {
-			Location l = (thisPlSpots->at(i)) ;
-			if (((l.x == 0) || (l.x == (boardSize-1))) || ((l.y == 0) || (l.y == (rowSize-1)))) {
-				searched = findSequence(l, nav, thisPlSpots, (maxSize-1), (maxSize-1)) ;
-				if (searched->b == true) {
-					Location* locn = findIndex(searched->loc, reverse(searched->dir), 1) ;
-					if (locn != nullptr) {
-						currentPlayer->setNextSpace(locn->x, locn->y) ;
-						decisionMade = true ;
-						break ;
-					}
-				}
-			}
-		}
-	}
-	if ((cornersFree()) && (decisionMade == false)) {
+	if ((cornersFree()) && (decisionMade == false)) { //EMPTY CORNER
 		while (decisionMade == false) {
 			int r = std::rand() % freeCorners->size() ;
 			vector<Location*>::iterator it = freeCorners->begin();
@@ -311,22 +388,25 @@ void Game::aiAction() {
 			}
 		}
 	}
-	if ((!(cornersFree())) && (decisionMade == false)) {
-		unsigned center = (boardSize/2) ;
-		unsigned middle = (rowSize/2) ;
-		if (!(isWritten(center, middle))) {
-			decisionMade = true ;
-			currentPlayer->setNextSpace(center, middle) ;
+	if ((edgesFree()) && (decisionMade == false)) { //EMPTY EDGE
+		while (decisionMade == false) {
+			int r = std::rand() % freeEdges->size() ;
+			vector<Location*>::iterator it = freeEdges->begin();
+			std::advance(it, r);
+			Location *l = it.operator*() ;
+			if (!(isWritten(l->x, l->y))) {
+				decisionMade = true ;
+				currentPlayer->setNextSpace(l->x, l->y) ;
+			}
 		}
-		
 	}
-	
 }
 
 
 void Game::manageGame() {
     if (!(checkStarted())) {
         setStarted(true) ;
+		currentGameLog = new stringstream() ;
 		*currentGameLog << "New Game!" << endl ;
 		if (gamesPlayed == 0) {
 			*currentGameLog << player0->getName() <<  " is " << player0->getXOChar() << "." << endl ;
@@ -348,20 +428,21 @@ void Game::manageGame() {
 	 */
 	if (currentPlayer->isHuman()) { //we may change this to take console input from a player
 		
-		if (currentPlayer->getTurns() == 0) {
-			currentPlayer->setNextSpace(1, 1) ;
-		}
-		else if (currentPlayer->getTurns() == 1) {
-			currentPlayer->setNextSpace(2, 1) ;
-		}
-		else if (currentPlayer->getTurns() == 2) {
-			currentPlayer->setNextSpace(1, 2) ;
-		}
-		else {
-			int x = rand() % 3 ;
-			int y = rand() % 3 ;
-			currentPlayer->setNextSpace(x, y) ;
-		}
+		int x, y ;
+		 
+		 /*
+		cout << "Enter the X coordinate for your desired location:" ;
+		cin >> x ;
+		cout << endl ;
+		cout << "Enter the Y coordinate for your desired location:" ;
+		cin >> y ;
+		cout << endl << endl ;
+		 */
+	
+		x = rand() % 3 ;
+		y = rand() % 3 ;
+		currentPlayer->setNextSpace(x, y) ;
+		
 	}
 	else if (!(currentPlayer->isHuman())) {
 		aiAction() ;
@@ -369,6 +450,9 @@ void Game::manageGame() {
 	}
 	
 	gameEvent() ;
+	//debug
+	cout << currentGameLog->rdbuf() << endl ;
+	//end
 	
 	checkWin() ;
 	
@@ -405,6 +489,7 @@ void Game::gameEvent() {
 	else if (!(isWritten(p->x, p->y))) {
 		writeIndex(p->x, p->y, currentPlayer->getXO()) ;
 		currentPlayer->incTurns() ;
+		turns++ ;
 		currentPlayer->setLastWritten(p->x, p->y) ;
 		delete this->lastWritten ;
 		this->lastWritten = new Location(p->x, p->y) ;
@@ -530,6 +615,29 @@ direction Game::reverse(direction dir) {
 	}
 }
 
+Location* Game::getOpposite(Location* loc) {
+	Location* ret = new Location() ;
+	if (loc->x == 0) {
+		ret->x = (boardSize-1) ;
+	}
+	else if (loc->x == (boardSize/2)) {
+		ret->x = (boardSize/2) ;
+	}
+	else { // (if x = boardSize-1)
+		ret->x = 0 ;
+	}
+	if (loc->y == 0) {
+		ret->y = (rowSize-1) ;
+	}
+	else if (loc->y == (rowSize/2)) {
+		ret->y = (rowSize/2) ;
+	}
+	else { // (if y == rowSize-1)
+		ret->y = 0 ;
+	}
+	return ret ;
+}
+
 bool Game::openSequence(vector<Location>* thisPlSpots, vector<Location>* oppPlSpots, Location check) {
 	return false ;
 }
@@ -543,15 +651,17 @@ void Game::writeAllIndex(XO xorO) {
 }
 
 void Game::resetGame() {
-	if (winner == false) {
-		;
-	}
 	gamesPlayed++ ;
 	setStarted(false) ; //will set gameOver state as well
+	winOrDraw = winner ;
 	winner = false ;
 	winningXO = nullxo ;
 	gameCode = 3 ;
 	writeAllIndex(blank) ;
+	lastGameLog = new stringstream() ;
+	*lastGameLog << currentGameLog->rdbuf() ;
+	delete currentGameLog ;
+	turns = 0 ;
 	player0->resetTurns() ;
 	player1->resetTurns() ;
 	player0->setNextSpace(maxSize+1, maxSize+1) ;
@@ -639,7 +749,20 @@ Navigator* Game::findSequence(Location here, Navigator* nav, vector<Location>* e
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::right ;
-			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			
+			Navigator test = Navigator() ;
+			test.lengthSearched = nav->lengthSearched ;
+			test.loc = nearby ;
+			test.dir = direction::right ;
+			
+			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
+			if (test.b == true) {
+				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			}
+			else {
+				nav->dir = direction::null ;
+				nav->lengthSearched = (nav->lengthSearched - offset) ;
+			}
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::left)) {
@@ -648,7 +771,20 @@ Navigator* Game::findSequence(Location here, Navigator* nav, vector<Location>* e
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::left ;
-			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			
+			Navigator test = Navigator() ;
+			test.lengthSearched = nav->lengthSearched ;
+			test.loc = nearby ;
+			test.dir = direction::left ;
+			
+			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
+			if (test.b == true) {
+				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			}
+			else {
+				nav->dir = direction::null ;
+				nav->lengthSearched = (nav->lengthSearched - offset) ;
+			}
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::up)) {
@@ -657,7 +793,20 @@ Navigator* Game::findSequence(Location here, Navigator* nav, vector<Location>* e
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::up ;
-			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			
+			Navigator test = Navigator() ;
+			test.lengthSearched = nav->lengthSearched ;
+			test.loc = nearby ;
+			test.dir = direction::up ;
+			
+			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
+			if (test.b == true) {
+				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			}
+			else {
+				nav->dir = direction::null ;
+				nav->lengthSearched = (nav->lengthSearched - offset) ;
+			}
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::down)) {
@@ -666,7 +815,20 @@ Navigator* Game::findSequence(Location here, Navigator* nav, vector<Location>* e
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::down ;
-			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			
+			Navigator test = Navigator() ;
+			test.lengthSearched = nav->lengthSearched ;
+			test.loc = nearby ;
+			test.dir = direction::down ;
+			
+			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
+			if (test.b == true) {
+				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			}
+			else {
+				nav->dir = direction::null ;
+				nav->lengthSearched = (nav->lengthSearched - offset) ;
+			}
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::upRight)) {
@@ -675,7 +837,20 @@ Navigator* Game::findSequence(Location here, Navigator* nav, vector<Location>* e
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::upRight ;
-			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			
+			Navigator test = Navigator() ;
+			test.lengthSearched = nav->lengthSearched ;
+			test.loc = nearby ;
+			test.dir = direction::upRight ;
+			
+			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
+			if (test.b == true) {
+				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			}
+			else {
+				nav->dir = direction::null ;
+				nav->lengthSearched = (nav->lengthSearched - offset) ;
+			}
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::upLeft)) {
@@ -684,7 +859,20 @@ Navigator* Game::findSequence(Location here, Navigator* nav, vector<Location>* e
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::upLeft ;
-			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			
+			Navigator test = Navigator() ;
+			test.lengthSearched = nav->lengthSearched ;
+			test.loc = nearby ;
+			test.dir = direction::upLeft ;
+			
+			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
+			if (test.b == true) {
+				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			}
+			else {
+				nav->dir = direction::null ;
+				nav->lengthSearched = (nav->lengthSearched - offset) ;
+			}
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::downRight)) {
@@ -693,7 +881,20 @@ Navigator* Game::findSequence(Location here, Navigator* nav, vector<Location>* e
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::downRight ;
-			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			
+			Navigator test = Navigator() ;
+			test.lengthSearched = nav->lengthSearched ;
+			test.loc = nearby ;
+			test.dir = direction::downRight ;
+			
+			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
+			if (test.b == true) {
+				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			}
+			else {
+				nav->dir = direction::null ;
+				nav->lengthSearched = (nav->lengthSearched - offset) ;
+			}
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::downLeft)) {
@@ -702,7 +903,20 @@ Navigator* Game::findSequence(Location here, Navigator* nav, vector<Location>* e
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::downLeft ;
-			return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			
+			Navigator test = Navigator() ;
+			test.lengthSearched = nav->lengthSearched ;
+			test.loc = nearby ;
+			test.dir = direction::downLeft ;
+			
+			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
+			if (test.b == true) {
+				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+			}
+			else {
+				nav->dir = direction::null ;
+				nav->lengthSearched = (nav->lengthSearched - offset) ;
+			}
 		}
 	}
 	nav->b = false ;
@@ -751,28 +965,34 @@ string Game::toString() {
 }
 
 string Game::getGameLog() {
-	stringstream *tempLog = new stringstream() ;
-	*tempLog << currentGameLog->rdbuf() ;
-    return tempLog->str() ;
+    return lastGameLog->str() ;
 }
 
 void Game::initVectors() {
 	freeLocations = nullptr ;
 	freeCorners = nullptr ;
+	freeEdges = nullptr ;
 	corners = new vector<Location*>() ;
 	corners->push_back(new Location(0, 0)) ;
 	corners->push_back(new Location(0, rowSize-1)) ;
 	corners->push_back(new Location(boardSize-1, 0)) ;
 	corners->push_back(new Location (boardSize-1, rowSize-1)) ;
+	edges = new vector<Location*>() ;
+	edges->push_back(new Location((boardSize/2), 0)) ;
+	edges->push_back(new Location((boardSize-1), (rowSize/2))) ;
+	edges->push_back(new Location((boardSize/2), (rowSize-1))) ;
+	edges->push_back(new Location(0, (rowSize/2))) ;
 }
 
 void Game::destrVectors() {
 	delete freeLocations ;
+	delete freeEdges ;
 	delete freeCorners ;
+	delete edges ;
 	delete corners ;
 }
 
-void Game::updateFreeLocations() { //updates freeCorners as well
+void Game::updateFreeLocations() { //updates freeCorners and freeEdges as well
 	if (freeLocations == nullptr) {
 		freeLocations = new vector<Location*>() ;
 		for (int i = 0; i < boardSize ; i++) {
@@ -794,6 +1014,17 @@ void Game::updateFreeLocations() { //updates freeCorners as well
 			}
 		}
 	}
+	if (freeEdges == nullptr) {
+		freeEdges = new vector<Location*>() ;
+		for (vector<Location*>::size_type i = 0 ; i < freeLocations->size() ; i++) {
+			for (vector<Location*>::size_type j = 0 ; j < edges->size() ; j++) {
+				if (freeLocations->at(i)->equals(edges->at(j))) {
+					freeEdges->push_back(freeLocations->at(i)) ;
+				}
+			}
+		}
+	}
+	
 	if (lastWritten != nullptr) {
 		for (vector<Location*>::size_type i = 0 ; i < freeLocations->size() ; i++) {
 			if ((freeLocations->at(i))->equals(lastWritten)) {
@@ -804,12 +1035,39 @@ void Game::updateFreeLocations() { //updates freeCorners as well
 					freeCorners->erase(freeCorners->begin() + i) ;
 				}
 			}
+			if (i < freeEdges->size()) {
+				if ((freeEdges->at(i))->equals(lastWritten)) {
+					freeEdges->erase(freeEdges->begin() + i) ;
+				}
+			}
 		}
 	}
 }
 
 bool Game::cornersFree() {
 	return (freeCorners->size() > 0) ;
+}
+
+bool Game::edgesFree() {
+	return (freeEdges->size() > 0) ;
+}
+
+bool Game::isCorner(Location* loc) {
+	for (vector<Location*>::size_type i = 0 ; i < corners->size() ; i++) {
+		if ((corners->at(i))->equals(loc)) {
+			return true ;
+		}
+	}
+	return false ;
+}
+
+bool Game::isEdge(Location* loc) {
+	for (vector<Location*>::size_type i = 0 ; i < edges->size() ; i++) {
+		if ((edges->at(i))->equals(loc)) {
+			return true ;
+		}
+	}
+	return false ;
 }
 
 
