@@ -17,6 +17,7 @@ Location::Location() {
 	y = 0 ;
 }
 
+
 vector<SmartXO*>* xDatabase = new vector<SmartXO*>() ;
 vector<SmartXO*>* oDatabase = new vector<SmartXO*>() ;
 

@@ -37,6 +37,7 @@ struct Navigator {
 	bool b ; //true = there is a straight line of X or Os
 	Location *loc ; //the coordinates at the end of the straight line
 	unsigned lengthSearched ;
+	vector<Location*>* skip = new vector<Location*>() ;
 };
 
 class Game : public SmartXO {
@@ -112,7 +113,9 @@ protected:
 	
 	/*takes a direction in which to recursively search for a straight line of Xs or Os. nav.lengthSearched keeps track of how far we've searched, unsigned maxSearch sets the limit on the length of our search (Note: nav should be passed in with its loc member set to nullptr, and its direction member set to direction::null. end will be returned with its loc member set to the coordinates at the end of the X or O sequence, assuming it finds one. If not, it will return with it's bool member set to false). offset must be set to 1 to search for a sequence (setting to other integer values can allow this function to perform other tasks, like finding a matching XO on the other side of the array)
 	 */
-	static Navigator* findSequence(Location, Navigator*, vector<Location>*, int, unsigned) ; //
+	static Navigator* findSequence(Location, Navigator*, vector<Location>*, int, unsigned) ; //Navigator->skip cannot be null
+	Location* checkSequences(vector<Location>*, vector<Location>*, int, unsigned) ;
+	
 	
 	static Location* locSearch(Location, vector<Location>*, int, int) ; //searches through vector of locations to find any that are 1 unit away
 	

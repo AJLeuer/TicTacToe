@@ -218,6 +218,7 @@ void Game::checkWin() {
 
 void Game::playGame() {
 	while(true) {
+		
 		manageGame() ;
 		if (gameOver) {
 			break ;
@@ -316,25 +317,10 @@ void Game::aiAction() {
 	}
 
 	if ((oppPlSpots != nullptr) && (decisionMade == false)) { //BLOCK: if the opposing player has 2 in a row we will set our next space to be the end of that sequence
-		Navigator *nav = new Navigator() ;
-		Navigator *searched = nullptr ;
-		for (vector<SmartXO*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
-			nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
-			searched = findSequence(oppPlSpots->at(i), nav, oppPlSpots, 1, 1) ;
-			if (searched->b == true) {
-				Location *loc1 = findIndex(searched->loc, searched->dir, 1) ;
-				Location *loc2 = findIndex(searched->loc, reverse(searched->dir), (searched->lengthSearched +1)) ;
-				if (loc1 != nullptr) {
-					currentPlayer->setNextSpace(loc1->x, loc1->y) ;
-					decisionMade = true ;
-					break ;
-				}
-				else if (loc2 != nullptr) {
-					currentPlayer->setNextSpace(loc2->x, loc2->y) ;
-					decisionMade = true ;
-					break ;
-				}
-			}
+		Location *loc = checkSequences(oppPlSpots, oppPlSpots, 1, 1) ;
+		if (loc != nullptr) {
+			currentPlayer->setNextSpace(loc->x, loc->y) ;
+			decisionMade = true ;
 		}
 	}
 	if ((oppPlSpots != nullptr) && (decisionMade == false)) { //BLOCK: if the opposing player has X or Os on opposite sides of the boards, we will set our next write to be in between
@@ -429,8 +415,28 @@ void Game::manageGame() {
 	if (currentPlayer->isHuman()) { //we may change this to take console input from a player
 		
 		int x, y ;
+		/*
+		//debug code
+		if (currentPlayer->getTurns() == 0) {
+			currentPlayer->setNextSpace(1, 1) ;
+		}
+		else if (currentPlayer->getTurns() == 1) {
+			currentPlayer->setNextSpace(2, 1) ;
+		}
+		else if (currentPlayer->getTurns() == 2) {
+			currentPlayer->setNextSpace(0, 2) ;
+		}
+		else if (currentPlayer->getTurns() == 3) {
+			
+			currentPlayer->setNextSpace(1, 2) ;
+		}
+		else if (currentPlayer->getTurns() == 4) {
+			currentPlayer->setNextSpace(1, 0) ;
+		}
+		//end debug
+		*/
 		 
-		 /*
+		/*
 		cout << "Enter the X coordinate for your desired location:" ;
 		cin >> x ;
 		cout << endl ;
@@ -438,21 +444,34 @@ void Game::manageGame() {
 		cin >> y ;
 		cout << endl << endl ;
 		 */
-	
+		
+		
 		x = rand() % 3 ;
 		y = rand() % 3 ;
 		currentPlayer->setNextSpace(x, y) ;
 		
 	}
 	else if (!(currentPlayer->isHuman())) {
+		/*
+		//debug
+		if (currentPlayer->getTurns() == 0) {
+			currentPlayer->setNextSpace(2, 0) ;
+		}
+		else if (currentPlayer->getTurns() == 1) {
+			currentPlayer->setNextSpace(0, 1) ;
+		}
+		else if (currentPlayer->getTurns() == 2) {
+			currentPlayer->setNextSpace(2, 2) ;
+			
+		}
+		//end debug
+		 */
+			
 		aiAction() ;
 		//this will setNextSpace() also
 	}
 	
 	gameEvent() ;
-	//debug
-	cout << currentGameLog->rdbuf() << endl ;
-	//end
 	
 	checkWin() ;
 	
@@ -737,191 +756,288 @@ bool Game::checkLocations() {
 	return ret ;
 }
 
-Navigator* Game::findSequence(Location here, Navigator* nav, vector<Location>* elseWhere, int offset, unsigned maxSearch) {
+Navigator* Game::findSequence(Location here, Navigator* nav, vector<Location>* elseWhere, int offset, unsigned maxSearch){
 	
     if (nav->lengthSearched >= maxSearch) {
 		nav->b = true ;
         return nav ;
     }
+	
 	if ((nav->dir == direction::null) || (nav->dir == direction::right)) { // then search right next...
 		Location *nearby = (locSearch(here, elseWhere, offset, 0)) ;
+		int lsStore = nav->lengthSearched ;
 		if (nearby != nullptr) {
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::right ;
 			
 			Navigator test = Navigator() ;
+			Location *nearby2 = new Location(nearby->x, nearby->y) ;
 			test.lengthSearched = nav->lengthSearched ;
-			test.loc = nearby ;
+			test.loc = nearby2 ;
 			test.dir = direction::right ;
 			
 			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
 			if (test.b == true) {
-				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				if ((nearby->equals(nav->skip)) && (nav->lengthSearched == maxSearch)) {
+					nav->dir = direction::null ;
+					nav->lengthSearched = lsStore ;
+				}
+				else {
+					return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				}
 			}
 			else {
 				nav->dir = direction::null ;
-				nav->lengthSearched = (nav->lengthSearched - offset) ;
+				nav->lengthSearched = lsStore ;
 			}
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::left)) {
 		Location *nearby = (locSearch(here, elseWhere, -offset, 0)) ;
+		int lsStore = nav->lengthSearched ;
 		if (nearby != nullptr) {
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::left ;
 			
 			Navigator test = Navigator() ;
+			Location *nearby2 = new Location(nearby->x, nearby->y) ;
 			test.lengthSearched = nav->lengthSearched ;
-			test.loc = nearby ;
+			test.loc = nearby2 ;
 			test.dir = direction::left ;
 			
 			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
 			if (test.b == true) {
-				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				if ((nearby->equals(nav->skip)) && (nav->lengthSearched == maxSearch)) {
+					nav->dir = direction::null ;
+					nav->lengthSearched = lsStore ;
+				}
+				else {
+					return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				}
 			}
 			else {
 				nav->dir = direction::null ;
-				nav->lengthSearched = (nav->lengthSearched - offset) ;
+				nav->lengthSearched = lsStore ;
 			}
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::up)) {
 		Location *nearby = (locSearch(here, elseWhere, 0, -offset)) ;
+		int lsStore = nav->lengthSearched ;
 		if (nearby != nullptr) {
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::up ;
 			
 			Navigator test = Navigator() ;
+			Location *nearby2 = new Location(nearby->x, nearby->y) ;
 			test.lengthSearched = nav->lengthSearched ;
-			test.loc = nearby ;
+			test.loc = nearby2 ;
 			test.dir = direction::up ;
 			
 			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
 			if (test.b == true) {
-				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				if ((nearby->equals(nav->skip)) && (nav->lengthSearched == maxSearch)) {
+					nav->dir = direction::null ;
+					nav->lengthSearched = lsStore ;
+				}
+				else {
+					return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				}
 			}
 			else {
 				nav->dir = direction::null ;
-				nav->lengthSearched = (nav->lengthSearched - offset) ;
+				nav->lengthSearched = lsStore ;
 			}
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::down)) {
 		Location *nearby = (locSearch(here, elseWhere, 0, offset)) ;
+		int lsStore = nav->lengthSearched ;
 		if (nearby != nullptr) {
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::down ;
 			
 			Navigator test = Navigator() ;
+			Location *nearby2 = new Location(nearby->x, nearby->y) ;
 			test.lengthSearched = nav->lengthSearched ;
-			test.loc = nearby ;
+			test.loc = nearby2 ;
 			test.dir = direction::down ;
 			
 			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
 			if (test.b == true) {
-				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				if ((nearby->equals(nav->skip)) && (nav->lengthSearched == maxSearch)) {
+					nav->dir = direction::null ;
+					nav->lengthSearched = lsStore ;
+				}
+				else {
+					return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				}
 			}
 			else {
 				nav->dir = direction::null ;
-				nav->lengthSearched = (nav->lengthSearched - offset) ;
+				nav->lengthSearched = lsStore ;
 			}
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::upRight)) {
 		Location *nearby = (locSearch(here, elseWhere, offset, -offset)) ;
+		int lsStore = nav->lengthSearched ;
 		if (nearby != nullptr) {
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::upRight ;
-			
+	
 			Navigator test = Navigator() ;
+			Location *nearby2 = new Location(nearby->x, nearby->y) ;
 			test.lengthSearched = nav->lengthSearched ;
-			test.loc = nearby ;
+			test.loc = nearby2 ;
 			test.dir = direction::upRight ;
 			
 			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
 			if (test.b == true) {
-				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				if ((nearby->equals(nav->skip)) && (nav->lengthSearched == maxSearch)) {
+					nav->dir = direction::null ;
+					nav->lengthSearched = lsStore ;
+				}
+				else {
+					return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				}
 			}
 			else {
 				nav->dir = direction::null ;
-				nav->lengthSearched = (nav->lengthSearched - offset) ;
+				nav->lengthSearched = lsStore ;
 			}
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::upLeft)) {
 		Location *nearby = (locSearch(here, elseWhere, -offset, -offset)) ;
+		int lsStore = nav->lengthSearched ;
 		if (nearby != nullptr) {
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::upLeft ;
 			
 			Navigator test = Navigator() ;
+			Location *nearby2 = new Location(nearby->x, nearby->y) ;
 			test.lengthSearched = nav->lengthSearched ;
-			test.loc = nearby ;
+			test.loc = nearby2 ;
 			test.dir = direction::upLeft ;
 			
 			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
 			if (test.b == true) {
-				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				if ((nearby->equals(nav->skip)) && (nav->lengthSearched == maxSearch)) {
+					nav->dir = direction::null ;
+					nav->lengthSearched = lsStore ;
+				}
+				else {
+					return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				}
 			}
 			else {
 				nav->dir = direction::null ;
-				nav->lengthSearched = (nav->lengthSearched - offset) ;
+				nav->lengthSearched = lsStore ;
 			}
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::downRight)) {
 		Location *nearby = (locSearch(here, elseWhere, offset, offset)) ;
+		int lsStore = nav->lengthSearched ;
 		if (nearby != nullptr) {
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::downRight ;
 			
 			Navigator test = Navigator() ;
+			Location *nearby2 = new Location(nearby->x, nearby->y) ;
 			test.lengthSearched = nav->lengthSearched ;
-			test.loc = nearby ;
+			test.loc = nearby2 ;
 			test.dir = direction::downRight ;
 			
 			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
 			if (test.b == true) {
-				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				if ((nearby->equals(nav->skip)) && (nav->lengthSearched == maxSearch)) {
+					nav->dir = direction::null ;
+					nav->lengthSearched = lsStore ;
+				}
+				else {
+					return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				}
 			}
 			else {
 				nav->dir = direction::null ;
-				nav->lengthSearched = (nav->lengthSearched - offset) ;
+				nav->lengthSearched = lsStore ;
 			}
 		}
 	}
 	if ((nav->dir == direction::null) || (nav->dir == direction::downLeft)) {
 		Location *nearby = (locSearch(here, elseWhere, -offset, offset)) ;
+		int lsStore = nav->lengthSearched ;
 		if (nearby != nullptr) {
 			nav->lengthSearched = (nav->lengthSearched + offset) ;
 			nav->loc = nearby ;
 			nav->dir = direction::downLeft ;
 			
+			
 			Navigator test = Navigator() ;
+			Location *nearby2 = new Location(nearby->x, nearby->y) ;
 			test.lengthSearched = nav->lengthSearched ;
-			test.loc = nearby ;
+			test.loc = nearby2 ;
 			test.dir = direction::downLeft ;
 			
 			test = *findSequence(*nearby, &test, elseWhere, offset, maxSearch) ;
 			if (test.b == true) {
-				return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				if ((nearby->equals(nav->skip)) && (nav->lengthSearched == maxSearch)) {
+					nav->dir = direction::null ;
+					nav->lengthSearched = lsStore ;
+				}
+				else {
+					return findSequence(*nearby, nav, elseWhere, offset, maxSearch) ;
+				}
 			}
 			else {
 				nav->dir = direction::null ;
-				nav->lengthSearched = (nav->lengthSearched - offset) ;
+				nav->lengthSearched = lsStore ;
 			}
 		}
 	}
+	nav->skip->resize(0) ;
 	nav->b = false ;
 	return nav ;
 	
+}
+
+Location* Game::checkSequences(vector<Location>* here, vector<Location>* elseWhere, int offset, unsigned maxSearch) {
+	
+	Navigator *nav = new Navigator() ;
+	Navigator *searched = nullptr ;
+	nav->skip = new vector<Location*>() ;
+		for (vector<Location*>::size_type i = 0 ; i < here->size() ; i++) {
+			do {
+				nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
+				searched = findSequence(here->at(i), nav, elseWhere, offset, maxSearch) ;
+				if (searched->b == true) {
+					Location *loc1 = findIndex(searched->loc, searched->dir, 1) ;
+					Location *loc2 = findIndex(searched->loc, reverse(searched->dir), (searched->lengthSearched +1)) ;
+					if (loc1 != nullptr) {
+						return new Location(loc1->x, loc1->y) ;
+					}
+					else {
+						nav->skip->push_back(searched->loc) ;
+					}
+					if (loc2 != nullptr) {
+						return new Location(loc2->x, loc2->y) ;
+					}
+					else {
+						nav->skip->push_back(searched->loc) ;
+					}
+				}
+			} while (nav->skip->size() > 0);
+		}
+	return nullptr ;
 }
 
 Location* Game::locSearch(Location here, vector<Location>* elseWhere, int x_offset, int y_offset) {
