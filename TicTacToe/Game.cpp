@@ -119,11 +119,15 @@ void Game::initPlayers(bool player0WantsX, bool p0Human, bool p1Human, string p0
     bool player0First = rand() % 2 ;
 	if (player0First) {
 		currentPlayer = player0 ;
+        player0->setFirst(true) ;
 		nextPlayer = player1 ;
+        player1->setFirst(false) ;
 	}
 	else {
 		currentPlayer = player1 ;
+        player1->setFirst(true) ;
 		nextPlayer = player0 ;
+        player0->setFirst(false) ;
 	}
 	
     player0IsX = player0WantsX ;
@@ -217,8 +221,8 @@ void Game::checkWin() {
 }
 
 void Game::playGame() {
+    currentGameLog = new stringstream() ;
 	while(true) {
-		
 		manageGame() ;
 		if (gameOver) {
 			break ;
@@ -350,6 +354,9 @@ void Game::aiAction() {
 			currentPlayer->setNextSpace(center, middle) ;
 		}
 	}
+    if ((cornersFree()) && (decisionMade == false)) { //If the opposing player has opposite corners,
+        ;
+    }
 	if (decisionMade == false) { //OPPOSITE CORNER: if the opponent is in the opposite corner, we block
 		for (vector<SmartXO*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
 			if (isCorner(&(oppPlSpots->at(i)))) {
@@ -392,7 +399,6 @@ void Game::aiAction() {
 void Game::manageGame() {
     if (!(checkStarted())) {
         setStarted(true) ;
-		currentGameLog = new stringstream() ;
 		*currentGameLog << "New Game!" << endl ;
 		if (gamesPlayed == 0) {
 			*currentGameLog << player0->getName() <<  " is " << player0->getXOChar() << "." << endl ;
@@ -679,7 +685,11 @@ void Game::resetGame() {
 	writeAllIndex(blank) ;
 	lastGameLog = new stringstream() ;
 	*lastGameLog << currentGameLog->rdbuf() ;
-	delete currentGameLog ;
+    stringstream *s = new stringstream() ;
+    if (typeid(*s) == typeid(*currentGameLog)) {
+        delete currentGameLog ;
+        delete s ;
+    }
 	turns = 0 ;
 	player0->resetTurns() ;
 	player1->resetTurns() ;
@@ -694,22 +704,30 @@ void Game::resetGame() {
 	if (winPlayer != nullptr) {
 		if (winPlayer == player0) {
 			currentPlayer = player0 ;
+            player0->setFirst(true) ;
 			nextPlayer = player1 ;
+            player1->setFirst(false) ;
 		}
 		else if (winPlayer == player1) {
 			currentPlayer = player1 ;
+            player1->setFirst(true) ;
 			nextPlayer = player0 ;
+            player0->setFirst(false) ;
 		}
 	}
 	else if (winPlayer == nullptr) {
 		bool pl0frst = rand() % 2 ;
 		if (pl0frst) {
 			currentPlayer = player0 ;
+            player0->setFirst(true) ;
 			nextPlayer = player1 ;
+            player1->setFirst(false) ;
 		}
 		else {
 			currentPlayer = player1 ;
+            player1->setFirst(true) ;
 			nextPlayer = player0 ;
+            player0->setFirst(false) ;
 		}
 	}
 	lastWinner = winPlayer ;

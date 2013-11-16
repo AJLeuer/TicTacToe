@@ -26,6 +26,7 @@ protected:
 	Location *lastWritten ;
 	unsigned turns = 0 ; //counter
 	unsigned wins = 0 ;
+    bool firstP ;
 	
 public:
 	Player() ;
@@ -50,6 +51,8 @@ public:
 	string getName() ;
 	
 	bool isHuman() { return human ; } //else is AI
+    void setFirst(bool b) { this->firstP = b ; }
+    bool isFirst() { return this->firstP ; }
 	
 	void setNextSpace(int, int) ;
 	Location *getNextSpace() ;
