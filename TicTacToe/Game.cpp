@@ -182,7 +182,13 @@ XO Game::getIndexAsXO(int x, int y){
 }
 
 bool Game::isWritten(int x, int y) {
-    if (((((board[x][y]))->getXO()) == X) || ((((board[x][y]))->getXO()) == O)) {
+	if ((x >= boardSize) || (x < 0)) {
+		return true ;
+	}
+	else if ((y >= rowSize) || (y < 0)) {
+		return true ;
+	}
+    else if (((((board[x][y]))->getXO()) == X) || ((((board[x][y]))->getXO()) == O)) {
 		return true ;
 	}
     return false ;
@@ -243,19 +249,21 @@ void Game::playGameRtime() {
 void Game::aiAction() {
 	
 	bool decisionMade = false ;
+	unsigned center = (boardSize/2) ;
+	unsigned middle = (rowSize/2) ;
+	Location* midpoint = new Location(center, middle) ;
 	
 	XO myxo = currentPlayer->getXO() ;
 	vector<Location>* thisPlSpots = SmartXO::getAllLoc(myxo) ;
 	XO oppxo = nextPlayer->getXO() ;
 	vector<Location>* oppPlSpots = SmartXO::getAllLoc(oppxo) ;
 	
-	bool counterOpenMove = ((currentPlayer->getTurns() == 0) && (nextPlayer->getTurns() == 1)) ;
-	bool first = ((currentPlayer->getTurns() == 0) && (nextPlayer->getTurns() == 0)) ;
+	bool counterOpenMove = ((nextPlayer->isFirst()) && (nextPlayer->getTurns() == 1)) ;
 	Location* oppMove = (nextPlayer->getLastWritten()) ;
 	
 	if (counterOpenMove) { //we'll counter if the opponent is first
 		if (isEdge(oppMove) || isCorner(oppMove)) { //opener is edge or side
-			currentPlayer->setNextSpace((boardSize/2), (rowSize/2)) ;
+			currentPlayer->setNextSpace(midpoint->x, midpoint->y) ;
 			decisionMade = true ;
 		}
 		else if (((oppMove->x) == (boardSize/2)) && ((oppMove->y) == (rowSize/2))) { //opener is center
@@ -271,7 +279,7 @@ void Game::aiAction() {
 			}
 		}
 	}
-	else if (first) { //we're first, so we'll place a corner
+	else if ((currentPlayer->isFirst()) && (currentPlayer->getTurns() == 0)) { //we're first, so we'll place a corner
 		while (decisionMade == false) {
 			int r = std::rand() % freeCorners->size() ;
 			vector<Location*>::iterator it = freeCorners->begin();
@@ -283,7 +291,7 @@ void Game::aiAction() {
 			}
 		}
 	}
-	
+	//remaining code is decision making for the rest of the game
 	if ((thisPlSpots != nullptr) && (decisionMade == false)) { //WIN: if we have two in a row already this behavior fills in the last space
 		Navigator *nav = new Navigator() ;
 		Navigator *searched = nullptr ;
@@ -346,17 +354,51 @@ void Game::aiAction() {
 			}
 		}
 	}
-	if ((!(first)) && (decisionMade == false)) { //CENTER
-		unsigned center = (boardSize/2) ;
-		unsigned middle = (rowSize/2) ;
+	if (decisionMade == false) { //CENTER
 		if (!(isWritten(center, middle))) {
 			decisionMade = true ;
 			currentPlayer->setNextSpace(center, middle) ;
 		}
 	}
-    if ((cornersFree()) && (decisionMade == false)) { //If the opposing player has opposite corners,
-        ;
-    }
+	if (decisionMade == false) { //Opponent has opposite corners and we have center, we'll play an edge
+		for (vector<SmartXO*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
+			if (isCorner(&(oppPlSpots->at(i)))) {
+				Location *corner = getOpposite(&(oppPlSpots->at(i))) ;
+				if (corner->equals(oppPlSpots)) {
+					if (edgesFree()) {
+						while (decisionMade == false) {
+							int r = std::rand() % freeEdges->size() ;
+							vector<Location*>::iterator it = freeEdges->begin();
+							std::advance(it, r);
+							Location *l = it.operator*() ;
+							if (!(isWritten(l->x, l->y))) {
+								decisionMade = true ;
+								currentPlayer->setNextSpace(l->x, l->y) ;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	if (decisionMade == false) { //edges and corners
+		vector<Location>* oppEdCn = new vector<Location>() ;
+		for (vector<Location>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
+			if (((oppPlSpots->at(i)).equals(edges)))  {
+				oppEdCn->push_back(oppPlSpots->at(i)) ;
+			}
+			if (((oppPlSpots->at(i)).equals(corners))) {
+				oppEdCn->push_back(oppPlSpots->at(i)) ;
+			}
+		}
+		Location* sf = stopFork(oppEdCn) ;
+		if (sf != nullptr) {
+			decisionMade = true ;
+			currentPlayer->setNextSpace(sf->x, sf->y) ;
+		}
+		
+	}
+  
 	if (decisionMade == false) { //OPPOSITE CORNER: if the opponent is in the opposite corner, we block
 		for (vector<SmartXO*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
 			if (isCorner(&(oppPlSpots->at(i)))) {
@@ -421,26 +463,26 @@ void Game::manageGame() {
 	if (currentPlayer->isHuman()) { //we may change this to take console input from a player
 		
 		int x, y ;
+		
 		/*
 		//debug code
 		if (currentPlayer->getTurns() == 0) {
-			currentPlayer->setNextSpace(1, 1) ;
+			currentPlayer->setNextSpace(2, 0) ;
 		}
 		else if (currentPlayer->getTurns() == 1) {
-			currentPlayer->setNextSpace(2, 1) ;
-		}
-		else if (currentPlayer->getTurns() == 2) {
-			currentPlayer->setNextSpace(0, 2) ;
-		}
-		else if (currentPlayer->getTurns() == 3) {
-			
 			currentPlayer->setNextSpace(1, 2) ;
 		}
-		else if (currentPlayer->getTurns() == 4) {
-			currentPlayer->setNextSpace(1, 0) ;
+		else if (currentPlayer->getTurns() == 2) {
+			currentPlayer->setNextSpace(2, 1) ;
 		}
 		//end debug
-		*/
+		 */
+		
+		 x = rand() % 3 ;
+		 y = rand() % 3 ;
+		 currentPlayer->setNextSpace(x, y) ;
+		
+		 
 		 
 		/*
 		cout << "Enter the X coordinate for your desired location:" ;
@@ -452,27 +494,18 @@ void Game::manageGame() {
 		 */
 		
 		
-		x = rand() % 3 ;
-		y = rand() % 3 ;
-		currentPlayer->setNextSpace(x, y) ;
 		
 	}
 	else if (!(currentPlayer->isHuman())) {
+		
 		/*
 		//debug
 		if (currentPlayer->getTurns() == 0) {
-			currentPlayer->setNextSpace(2, 0) ;
-		}
-		else if (currentPlayer->getTurns() == 1) {
-			currentPlayer->setNextSpace(0, 1) ;
-		}
-		else if (currentPlayer->getTurns() == 2) {
-			currentPlayer->setNextSpace(2, 2) ;
-			
+			currentPlayer->setNextSpace(1, 1) ;
 		}
 		//end debug
 		 */
-			
+		 
 		aiAction() ;
 		//this will setNextSpace() also
 	}
@@ -661,6 +694,128 @@ Location* Game::getOpposite(Location* loc) {
 		ret->y = 0 ;
 	}
 	return ret ;
+}
+
+Location* Game::stopFork(vector<Location>* locations) {
+	vector<Location*>* topRow = new vector<Location*>() ;
+	vector<Location*>* rightSide = new vector<Location*>() ;
+	vector<Location*>* bottomRow = new vector<Location*>() ;
+	vector<Location*>* leftSide = new vector<Location*>() ;
+	
+	for (vector<Location*>::size_type i = 0 ; i < boardSize ; i++) {
+		topRow->push_back(new Location(i, 0)) ;
+	}
+	for (vector<Location*>::size_type i = 0 ; i < rowSize ; i++) {
+		rightSide->push_back(new Location((boardSize-1), i)) ;
+	}
+	for (vector<Location*>::size_type i = 0 ; i < boardSize ; i++) {
+		bottomRow->push_back(new Location(i, (rowSize-1))) ;
+	}
+	for (vector<Location*>::size_type i = 0 ; i < rowSize ; i++) {
+		leftSide->push_back(new Location(0, i)) ;
+	}
+	
+	for (vector<Location*>::size_type i = 0 ; i < locations->size() ; i++) {
+		for (vector<Location*>::size_type j = 0 ; j < locations->size() ; j++) {
+			if ((locations->at(i)).equals(topRow)) {
+				if ((locations->at(j)).equals(rightSide) && (!((locations->at(j)).equals(&(locations->at(i)))))) {
+					Location* loc = new Location(locations->at(j).x, locations->at(i).y) ;
+					if (!(isWritten(loc->x, loc->y))) {
+						return loc ;
+					}
+					else {
+						int tempx = loc->x ;
+						do {
+							loc->x-- ;
+							if (!(isWritten(loc->x, loc->y))) {
+								return loc ;
+							}
+						} while (loc->x > 0);
+						
+						loc->x = tempx ;
+						do {
+							loc->y++ ;
+							if (!(isWritten(loc->x, loc->y))) {
+								return loc ;
+							}
+						} while (loc->y < rowSize) ;
+					}
+				}
+				if ((locations->at(j)).equals(leftSide) && (!((locations->at(j)).equals(&(locations->at(i)))))) {
+					Location* loc = new Location(locations->at(j).x, locations->at(i).y) ;
+					if (!(isWritten(loc->x, loc->y))) {
+						return loc ;
+					}
+					else {
+						int tempx = loc->x ;
+						do {
+							loc->x++ ;
+							if (!(isWritten(loc->x, loc->y))) {
+								return loc ;
+							}
+						} while (loc->x < boardSize);
+						
+						loc->x = tempx ;
+						do {
+							loc->y++ ;
+							if (!(isWritten(loc->x, loc->y))) {
+								return loc ;
+							}
+						} while (loc->y < rowSize);
+					}
+				}
+			}
+			if ((locations->at(i)).equals(bottomRow)) {
+				if ((locations->at(j)).equals(rightSide) && (!((locations->at(j)).equals(&(locations->at(i)))))) {
+					Location* loc = new Location(locations->at(j).x, locations->at(i).y) ;
+					if (!(isWritten(loc->x, loc->y))) {
+						return loc ;
+					}
+					else {
+						int tempx = loc->x ;
+						do {
+							loc->x-- ;
+							if (!(isWritten(loc->x, loc->y))) {
+								return loc ;
+							}
+						} while (loc->x > 0);
+						
+						loc->x = tempx ;
+						do {
+							loc->y-- ;
+							if (!(isWritten(loc->x, loc->y))) {
+								return loc ;
+							}
+						} while (loc->y > 0);
+					}
+				}
+				if ((locations->at(j)).equals(leftSide) && (!((locations->at(j)).equals(&(locations->at(i)))))) {
+					Location* loc = new Location(locations->at(j).x, locations->at(i).y) ;
+					if (!(isWritten(loc->x, loc->y))) {
+						return loc ;
+					}
+					else {
+						int tempx = loc->x ;
+						do {
+							loc->x++ ;
+							if (!(isWritten(loc->x, loc->y))) {
+								return loc ;
+							}
+						} while (loc->x < boardSize) ;
+						
+						loc->x = tempx ;
+						do {
+							loc->y-- ;
+							if (!(isWritten(loc->x, loc->y))) {
+								return loc ;
+							}
+						} while (loc->y > 0);
+					}
+				}
+			}
+		}
+	}
+	return nullptr ;
 }
 
 bool Game::openSequence(vector<Location>* thisPlSpots, vector<Location>* oppPlSpots, Location check) {

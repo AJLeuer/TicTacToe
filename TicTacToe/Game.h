@@ -146,6 +146,7 @@ public:
 	static direction reverse(direction) ;
 	Location* getOpposite(Location*) ; //returns the mirror location on the other side of the board
 	bool openSequence(vector<Location>* thisPlSpots, vector<Location>* oppPlSpots, Location check) ; //returns true if there are no opposing players XO in between the current players already placed XOs and the desired spot, false if there are
+	Location* stopFork(vector<Location>*) ;
 	
     void manageGame() ;
 	void gameEvent() ;

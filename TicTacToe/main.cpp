@@ -26,6 +26,8 @@ int main(int argc, const char * argv[]) {
 	unsigned totalGames = 0 ;
 
     Game *g = new Game(true, "Guy") ;
+	
+	
 	Player *p0 = g->getPlayer0() ;
 	Player *p1 = g->getPlayer1() ;
 	
@@ -37,10 +39,7 @@ int main(int argc, const char * argv[]) {
 		if (g->getWinner() == p0) {
             p0wins++ ;
 			cout << g->getGameLog() << endl ;
-			break ;
 		}
-		if (g->getWinner() == p0)
-			p0wins++ ;
 		else if (g->getWinner() == p1)
 			p1wins++ ;
 	}
@@ -50,7 +49,7 @@ int main(int argc, const char * argv[]) {
 	cout << p0->getName() << " had " << p0wins << " wins." << endl ;
 	cout << p1->getName() << " had " << p1wins << " wins." << endl ;
 	
-
+	
 
 	
 }

@@ -25,6 +25,14 @@ public:
 		}
 		return false ;
 	}
+	bool equals(vector<Location>* l) {
+		for (vector<Location*>::size_type i = 0 ; i < l->size() ; i++) {
+			if (this->equals(&(l->at(i)))) {
+				return true ;
+			}
+		}
+		return false ;
+	}
 	
 } ;
 
