@@ -478,21 +478,21 @@ void Game::manageGame() {
 		//end debug
 		 */
 		
+		
+		/*
 		 x = rand() % 3 ;
 		 y = rand() % 3 ;
-		 currentPlayer->setNextSpace(x, y) ;
+		 
+		*/
 		
-		 
-		 
-		/*
 		cout << "Enter the X coordinate for your desired location:" ;
 		cin >> x ;
 		cout << endl ;
 		cout << "Enter the Y coordinate for your desired location:" ;
 		cin >> y ;
 		cout << endl << endl ;
-		 */
-		
+		 
+		currentPlayer->setNextSpace(x, y) ;
 		
 		
 	}
