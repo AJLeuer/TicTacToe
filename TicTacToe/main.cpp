@@ -32,18 +32,23 @@ int main(int argc, const char * argv[]) {
 	unsigned p0wins = 0 ;
 	unsigned p1wins = 0 ;
 	
+	g->playGame() ;
+	cout << g->getGameLog() << endl ;
+	
+	
 	for (unsigned i = 0 ; i < 100000 ; i++) {
 		g->playGame() ;
 		if (g->getWinner() == p0) {
             p0wins++ ;
 			cout << g->getGameLog() << endl ;
-			break ;
 		}
+		 
 		if (g->getWinner() == p0)
 			p0wins++ ;
 		else if (g->getWinner() == p1)
 			p1wins++ ;
 	}
+	 
 	
 	
 	cout << p0->getName() << " was " << char(p0->getXO()) << ", " << p1->getName() << " was " << char(p1->getXO()) << endl ;

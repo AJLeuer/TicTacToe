@@ -244,13 +244,16 @@ void Game::aiAction() {
 	
 	bool decisionMade = false ;
 	
+	unsigned center = (boardSize/2) ;
+	unsigned middle = (rowSize/2) ;
+	Location* midpoint = new Location(center, middle) ;
+	
 	XO myxo = currentPlayer->getXO() ;
 	vector<Location>* thisPlSpots = SmartXO::getAllLoc(myxo) ;
 	XO oppxo = nextPlayer->getXO() ;
 	vector<Location>* oppPlSpots = SmartXO::getAllLoc(oppxo) ;
 	
 	bool counterOpenMove = ((currentPlayer->getTurns() == 0) && (nextPlayer->getTurns() == 1)) ;
-	bool first = ((currentPlayer->getTurns() == 0) && (nextPlayer->getTurns() == 0)) ;
 	Location* oppMove = (nextPlayer->getLastWritten()) ;
 	
 	if (counterOpenMove) { //we'll counter if the opponent is first
@@ -271,7 +274,8 @@ void Game::aiAction() {
 			}
 		}
 	}
-	else if (first) { //we're first, so we'll place a corner
+	
+	else if ((currentPlayer->isFirst()) && (currentPlayer->getTurns() == 0)) { //we're first, so we'll place a corner
 		while (decisionMade == false) {
 			int r = std::rand() % freeCorners->size() ;
 			vector<Location*>::iterator it = freeCorners->begin();
@@ -346,16 +350,28 @@ void Game::aiAction() {
 			}
 		}
 	}
-	if ((!(first)) && (decisionMade == false)) { //CENTER
-		unsigned center = (boardSize/2) ;
-		unsigned middle = (rowSize/2) ;
+	
+	bool lastCorner = false ;
+	if (currentPlayer->getLastWritten() != nullptr) {
+		lastCorner = (currentPlayer->getLastWritten())->equals(corners) ;
+	}
+	if (((!(currentPlayer->isFirst()) || (lastCorner))) && (decisionMade == false)) { //CENTER
 		if (!(isWritten(center, middle))) {
 			decisionMade = true ;
 			currentPlayer->setNextSpace(center, middle) ;
 		}
 	}
-    if ((cornersFree()) && (decisionMade == false)) { //If the opposing player has opposite corners,
-        ;
+    if ((edgesFree()) && (decisionMade == false) && ((currentPlayer->getLastWritten())->equals(midpoint))) { //EDGE: Only if our last move was center...
+        while (decisionMade == false) {
+			int r = std::rand() % freeEdges->size() ;
+			vector<Location*>::iterator it = freeEdges->begin();
+			std::advance(it, r);
+			Location *l = it.operator*() ;
+			if (!(isWritten(l->x, l->y))) {
+				decisionMade = true ;
+				currentPlayer->setNextSpace(l->x, l->y) ;
+			}
+		}
     }
 	if (decisionMade == false) { //OPPOSITE CORNER: if the opponent is in the opposite corner, we block
 		for (vector<SmartXO*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
