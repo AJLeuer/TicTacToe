@@ -22,6 +22,7 @@ protected:
     string name ;
 	XO xorO ;
 	bool human ; //is this player human controlled or computer controlled, default behavior is to set to true (if not specified otherwise in constructor arg)
+    bool randPlayer ; //this player will just use a rand() generator to choose its moves
 	Location *nextSpace ; //an x and y coordinate that gives signifies the player or random generator's next choice
 	Location *lastWritten ;
 	unsigned turns = 0 ; //counter
@@ -53,6 +54,8 @@ public:
 	bool isHuman() { return human ; } //else is AI
     void setFirst(bool b) { this->firstP = b ; }
     bool isFirst() { return this->firstP ; }
+    void setRandPlayer(bool randm) {this->randPlayer = randm ; }
+    bool isRandPlayer() { return this->randPlayer ; }
 	
 	void setNextSpace(int, int) ;
 	Location *getNextSpace() ;

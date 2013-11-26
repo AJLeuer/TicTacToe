@@ -134,6 +134,9 @@ public:
 	Player* getPlayer0() ;
 	Player* getPlayer1() ;
 	Player* getWinner() ;
+    Player* getHuman() ;
+    Player* getAI() ;
+    
 	bool winOrDraw = false ; //true if someone won last game, false it if was a draw
     
     char getIndex(int, int) ;

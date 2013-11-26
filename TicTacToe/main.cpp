@@ -16,17 +16,42 @@
 
 using namespace std ;
 
+/*
 int main(int argc, const char * argv[]) {
 	
 	srand((unsigned)time(NULL)) ;
-	bool b = (rand() % 2) ;
-	bool b2 = (rand() % 2) ;
 	
 	unsigned totalGames = 0 ;
+    
 
-    Game *g = new Game(true, "Guy") ;
+    Game *g = new Game(true, "Kyle") ;
+    
+    
 	
 	g->playGameRtime() ;
+	
+}
+*/
+
+int main(int argc, const char * argv[]) {
+	
+	srand((unsigned)time(NULL)) ;
+    unsigned x ;
+    unsigned y ;
+
+    unsigned totalGames = 0 ;
+    unsigned playerWins = 0 ;
+    unsigned computerWins = 0 ;
+    
+    Game *g = new Game(true, "Kyle") ;
+    
+    Player* human = g->getHuman() ;
+    Player* computer = g->getAI() ;
+    
+    for (unsigned i = 0 ; i < 100000 ; i++) {
+        g->playGameRtime() ;
+    }
+	
 	
 }
 

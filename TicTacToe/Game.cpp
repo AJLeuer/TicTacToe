@@ -173,6 +173,30 @@ Player* Game::getWinner() {
 	return this->lastWinner ;
 }
 
+Player* Game::getHuman() {
+    if (player0->isHuman()) {
+        return player0 ;
+    }
+    else if (player1->isHuman()) {
+        return player1 ;
+    }
+    else {
+        return nullptr ;
+    }
+}
+
+Player* Game::getAI() {
+    if (!(player0->isHuman())) {
+        return player0 ;
+    }
+    else if (!(player1->isHuman())) {
+        return player1 ;
+    }
+    else {
+        return nullptr ;
+    }
+}
+
 char Game::getIndex(int x, int y) {
     return (char)(((board[x][y]))->getXO()) ;
 }
@@ -460,55 +484,59 @@ void Game::manageGame() {
 	
 	/*this block, up to gameEvent(), will handle all possible combinations of player opponents. Human vs human, human vs ai, ai vs ai, etc. Since gameEvent() switches the *currentPlayer pointer each time, we don't have to worry about specifying which player we're working with
 	 */
-	if (currentPlayer->isHuman()) { //we may change this to take console input from a player
+    if (currentPlayer->isRandPlayer()) {
+		 unsigned x = rand() % 3 ;
+		 unsigned y = rand() % 3 ;
+        
+        currentPlayer->setNextSpace(x, y) ;
+    }
+    
+    else {
+        
+        if (currentPlayer->isHuman()) { //we may change this to take console input from a player
 		
-		int x, y ;
+            int x, y ;
 		
-		/*
-		//debug code
-		if (currentPlayer->getTurns() == 0) {
-			currentPlayer->setNextSpace(2, 0) ;
-		}
-		else if (currentPlayer->getTurns() == 1) {
-			currentPlayer->setNextSpace(1, 2) ;
-		}
-		else if (currentPlayer->getTurns() == 2) {
-			currentPlayer->setNextSpace(2, 1) ;
-		}
-		//end debug
-		 */
+            /*
+             //debug code
+             if (currentPlayer->getTurns() == 0) {
+             currentPlayer->setNextSpace(2, 0) ;
+             }
+             else if (currentPlayer->getTurns() == 1) {
+             currentPlayer->setNextSpace(1, 2) ;
+             }
+             else if (currentPlayer->getTurns() == 2) {
+             currentPlayer->setNextSpace(2, 1) ;
+             }
+             //end debug
+             */
+    
 		
-		
-		/*
-		 x = rand() % 3 ;
-		 y = rand() % 3 ;
+            cout << "Enter the X coordinate for your desired location:" ;
+            cin >> x ;
+            cout << endl ;
+            cout << "Enter the Y coordinate for your desired location:" ;
+            cin >> y ;
+            cout << endl << endl ;
 		 
-		*/
+            currentPlayer->setNextSpace(x, y) ;
 		
-		cout << "Enter the X coordinate for your desired location:" ;
-		cin >> x ;
-		cout << endl ;
-		cout << "Enter the Y coordinate for your desired location:" ;
-		cin >> y ;
-		cout << endl << endl ;
+		
+        }
+        else if (!(currentPlayer->isHuman())) {
+		
+            /*
+            //debug
+            if (currentPlayer->getTurns() == 0) {
+            currentPlayer->setNextSpace(1, 1) ;
+            }
+            //end debug
+            */
 		 
-		currentPlayer->setNextSpace(x, y) ;
-		
-		
-	}
-	else if (!(currentPlayer->isHuman())) {
-		
-		/*
-		//debug
-		if (currentPlayer->getTurns() == 0) {
-			currentPlayer->setNextSpace(1, 1) ;
-		}
-		//end debug
-		 */
-		 
-		aiAction() ;
-		//this will setNextSpace() also
-	}
+            aiAction() ;
+            //this will setNextSpace() also
+        }
+    }
 	
 	gameEvent() ;
 	
