@@ -29,7 +29,7 @@
 
 using namespace std ;
 
-/*
+
 int main(int argc, const char * argv[]) {
 	
 	srand((unsigned)time(NULL)) ;
@@ -37,14 +37,14 @@ int main(int argc, const char * argv[]) {
 	unsigned totalGames = 0 ;
     
 
-    Game *g = new Game(true, "Kyle") ;
-    
+    Game *g = new Game(true, "Nancy") ;
     
 	
 	g->playGameRtime() ;
 	
 }
-*/
+
+/*
 
 int main(int argc, const char * argv[]) {
 	
@@ -67,4 +67,6 @@ int main(int argc, const char * argv[]) {
 	
 	
 }
+ 
+*/
 
