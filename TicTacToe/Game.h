@@ -11,8 +11,7 @@
 #include <vector>
 
 #include "Player.h"
-#include "XO.h"
-#include "SmartXO.h"
+#include "Mark.h"
 #include "Location.h"
 
 #ifndef TicTacToe_Game_h
@@ -40,10 +39,10 @@ struct Navigator {
 	vector<Location*>* skip = new vector<Location*>() ;
 };
 
-class Game : public SmartXO {
+class Game : public Mark {
     
 protected:
-    SmartXO* board[(unsigned)3][(unsigned)3] ;
+    Mark* board[(unsigned)3][(unsigned)3] ;
 	
 	
 	
@@ -61,7 +60,7 @@ protected:
 	Player *tempPlayer ; //points to a player temporarily
 	Player *winPlayer ; //obviously null to begin with
 	Player *lastWinner ;
-	XO winningXO ; //the X or O used by the winning player
+	Type winningType ; //the X or O used by the winning player
 	Location *lastWritten ;
 	
 	Player thisPlayer() ;
@@ -105,7 +104,7 @@ protected:
 	 If still at 3 then assignment to gameCode is not working correctly, we will throw an exception */
 	int gameCode ;
 	
-	void writeAllIndex(XO) ;
+	void writeAllIndex(Type) ;
 	void resetGame() ; //cleans the game board, resets members, etc.
 	
 	void checkWin() ;
@@ -130,7 +129,7 @@ public:
     void initPlayers(bool, bool, string, string) ;
     void initPlayers(bool, bool, bool, string, string) ;
 	
-	Player* idPlByXO(XO) ; //identifies player by their X or O
+	Player* idPlayerByMarkType(Type) ; //identifies player by their X or O
 	Player* getPlayer0() ;
 	Player* getPlayer1() ;
 	Player* getWinner() ;
@@ -140,10 +139,10 @@ public:
 	bool winOrDraw = false ; //true if someone won last game, false it if was a draw
     
     char getIndex(int, int) ;
-    XO getIndexAsXO(int, int) ;
+    Type getIndexAsMarkType(int, int) ;
 	bool isWritten(int, int) ; //returns true if this space has an X or O. Ignores blank or nullxo
 	
-    void writeIndex(int, int, XO) ;
+    void writeIndex(int, int, Type) ;
 	
 	Location* findIndex(Location*, direction, int) ; //takes a location as a starting point, then follows the specified direction to return the appropriate location (e.g. direction::up will return (x, y-1)). Returns a location if that location is writable with no issues, returns nullptr if index out of bounds or already written
 	static direction reverse(direction) ;

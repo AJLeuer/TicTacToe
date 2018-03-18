@@ -7,20 +7,21 @@
 //
 #include <iostream>
 
-#include "XO.h"
-#include "SmartXO.h"
+
+#include "Mark.h"
 
 #ifndef TicTacToe_Player_h
 #define TicTacToe_Player_h
 
 using namespace std ;
+using Type = Mark::Type;
 
 
 class Player {
 	
 protected:
     string name ;
-	XO xorO ;
+	Type xorO ;
 	bool human ; //is this player human controlled or computer controlled, default behavior is to set to true (if not specified otherwise in constructor arg)
     bool randPlayer ; //this player will just use a rand() generator to choose its moves
 	Location *nextSpace ; //an x and y coordinate that gives signifies the player or random generator's next choice
@@ -33,7 +34,7 @@ public:
 	Player() ;
 	Player(string) ;
 	Player(string, bool) ;
-	Player(string, XO, bool) ;
+	Player(string, Type, bool) ;
 	
 	
 	
@@ -44,8 +45,8 @@ public:
 	unsigned getTurns() { return this->turns ; }
 	unsigned getWins() {return this->wins ; }
 	
-	void setXO(XO) ;
-	XO getXO() { return xorO ; }
+	void setXO(Type) ;
+	Type getType() { return xorO ; }
 	char getXOChar() ;
 	
 	void setName(string) ;

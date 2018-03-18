@@ -9,6 +9,8 @@
 #ifndef TicTacToe_Location_h
 #define TicTacToe_Location_h
 
+using std::vector;
+
 class Location {
 public:
 	int x, y ;

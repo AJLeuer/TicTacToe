@@ -7,11 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		665D976E181BE3AC008F86D5 /* TicTacToe.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 665D976D181BE3AC008F86D5 /* TicTacToe.1 */; };
 		66AF1E7A1830667800F71EA1 /* Player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66AF1E791830667800F71EA1 /* Player.cpp */; };
 		66B0C2A4182B38D200ECB2B7 /* Game.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66B0C2A1182B38D200ECB2B7 /* Game.cpp */; };
 		66B0C2A5182B38D200ECB2B7 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66B0C2A2182B38D200ECB2B7 /* main.cpp */; };
-		66B0C2A6182B38D200ECB2B7 /* SmartXO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66B0C2A3182B38D200ECB2B7 /* SmartXO.cpp */; };
+		66B0C2A6182B38D200ECB2B7 /* Mark.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66B0C2A3182B38D200ECB2B7 /* Mark.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -21,7 +20,6 @@
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
-				665D976E181BE3AC008F86D5 /* TicTacToe.1 in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
@@ -29,17 +27,15 @@
 
 /* Begin PBXFileReference section */
 		665D9768181BE3AC008F86D5 /* TicTacToe */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TicTacToe; sourceTree = BUILT_PRODUCTS_DIR; };
-		665D976D181BE3AC008F86D5 /* TicTacToe.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = TicTacToe.1; sourceTree = "<group>"; };
 		66936ECD183493BB009FEF04 /* Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Util.h; sourceTree = "<group>"; };
 		66AF1E791830667800F71EA1 /* Player.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Player.cpp; sourceTree = "<group>"; };
 		66AF1E7C1830776E00F71EA1 /* Location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Location.h; sourceTree = "<group>"; };
 		66B0C29D182B38D200ECB2B7 /* Game.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Game.h; sourceTree = "<group>"; };
 		66B0C29E182B38D200ECB2B7 /* Player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Player.h; sourceTree = "<group>"; };
-		66B0C29F182B38D200ECB2B7 /* SmartXO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SmartXO.h; sourceTree = "<group>"; };
-		66B0C2A0182B38D200ECB2B7 /* XO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XO.h; sourceTree = "<group>"; };
+		66B0C29F182B38D200ECB2B7 /* Mark.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Mark.h; sourceTree = "<group>"; };
 		66B0C2A1182B38D200ECB2B7 /* Game.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Game.cpp; sourceTree = "<group>"; };
 		66B0C2A2182B38D200ECB2B7 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		66B0C2A3182B38D200ECB2B7 /* SmartXO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SmartXO.cpp; sourceTree = "<group>"; };
+		66B0C2A3182B38D200ECB2B7 /* Mark.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Mark.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,16 +69,14 @@
 			isa = PBXGroup;
 			children = (
 				66936ECD183493BB009FEF04 /* Util.h */,
-				66B0C2A0182B38D200ECB2B7 /* XO.h */,
 				66AF1E7C1830776E00F71EA1 /* Location.h */,
-				66B0C29F182B38D200ECB2B7 /* SmartXO.h */,
-				66B0C2A3182B38D200ECB2B7 /* SmartXO.cpp */,
+				66B0C29F182B38D200ECB2B7 /* Mark.h */,
+				66B0C2A3182B38D200ECB2B7 /* Mark.cpp */,
 				66B0C29E182B38D200ECB2B7 /* Player.h */,
 				66AF1E791830667800F71EA1 /* Player.cpp */,
 				66B0C29D182B38D200ECB2B7 /* Game.h */,
 				66B0C2A1182B38D200ECB2B7 /* Game.cpp */,
 				66B0C2A2182B38D200ECB2B7 /* main.cpp */,
-				665D976D181BE3AC008F86D5 /* TicTacToe.1 */,
 			);
 			path = TicTacToe;
 			sourceTree = "<group>";
@@ -140,7 +134,7 @@
 			files = (
 				66AF1E7A1830667800F71EA1 /* Player.cpp in Sources */,
 				66B0C2A5182B38D200ECB2B7 /* main.cpp in Sources */,
-				66B0C2A6182B38D200ECB2B7 /* SmartXO.cpp in Sources */,
+				66B0C2A6182B38D200ECB2B7 /* Mark.cpp in Sources */,
 				66B0C2A4182B38D200ECB2B7 /* Game.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

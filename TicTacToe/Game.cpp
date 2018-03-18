@@ -22,14 +22,14 @@ Game::Game() { //best for ai v ai
 	boardSize = sizeof(board)/sizeof(board[0]) ;
     rowSize = sizeof(board[0])/sizeof(board[0][0]) ;
 	maxSize = ceiling(boardSize, rowSize) ;
-	winningXO = nullxo ;
+	winningType = nullMark ;
     setStarted(false) ;
 	this->lastWritten = nullptr ;
 	initVectors() ;
 	lastGameLog = nullptr ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
-            board[i][j] = new SmartXO(blank, i, j, true) ;
+            board[i][j] = new Mark(blank, i, j, true) ;
         }
     }
     initPlayers(false, false) ;
@@ -42,14 +42,14 @@ Game::Game(string p0Name) {
 	boardSize = sizeof(board)/sizeof(board[0]) ;
     rowSize = sizeof(board[0])/sizeof(board[0][0]) ;
 	maxSize = ceiling(boardSize, rowSize) ;
-	winningXO = nullxo ;
+	winningType = nullMark ;
     setStarted(false) ;
 	this->lastWritten = nullptr ;
 	initVectors() ;
 	lastGameLog = nullptr ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
-            board[i][j] = new SmartXO(blank, i, j, true) ;
+            board[i][j] = new Mark(blank, i, j, true) ;
         }
     }
     initPlayers(true, false, p0Name, "Computer") ;
@@ -62,14 +62,14 @@ Game::Game(bool player0WantsX, string p0Name) { //p v ai
 	boardSize = sizeof(board)/sizeof(board[0]) ;
     rowSize = sizeof(board[0])/sizeof(board[0][0]) ;
 	maxSize = ceiling(boardSize, rowSize) ;
-	winningXO = nullxo ;
+	winningType = nullMark ;
     setStarted(false) ;
 	this->lastWritten = nullptr ;
 	initVectors() ;
 	lastGameLog = nullptr ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
-            board[i][j] = new SmartXO(blank, i, j, true) ;
+            board[i][j] = new Mark(blank, i, j, true) ;
         }
     }
     initPlayers(player0WantsX, true, false, p0Name, "Computer") ;
@@ -82,14 +82,14 @@ Game::Game(bool player0WantsX, string p0Name, string p1Name) { //pvp
 	boardSize = sizeof(board)/sizeof(board[0]) ;
     rowSize = sizeof(board[0])/sizeof(board[0][0]) ;
 	maxSize = ceiling(boardSize, rowSize) ;
-	winningXO = nullxo ;
+	winningType = nullMark ;
     setStarted(false) ;
 	this->lastWritten = nullptr ;
 	initVectors() ;
 	lastGameLog = nullptr ;
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
-            board[i][j] = new SmartXO(blank, i, j, true) ;
+            board[i][j] = new Mark(blank, i, j, true) ;
         }
 	}
     initPlayers(player0WantsX, true, true, p0Name, p1Name) ;
@@ -144,12 +144,12 @@ void Game::initPlayers(bool player0WantsX, bool p0Human, bool p1Human, string p0
 	//player1->setNextSpace(maxSize+1, maxSize+1) ;
 }
 
-Player* Game::idPlByXO(XO Xo) {
+Player* Game::idPlayerByMarkType(Type type) {
 	
-	if (player0->getXO() == (Xo)) {
+	if (player0->getType() == (type)) {
 		return player0 ;
 	}
-	else if(player1->getXO() == (Xo)) {
+	else if(player1->getType() == (type)) {
 		return player1 ;
 	}
 	else {
@@ -198,11 +198,11 @@ Player* Game::getAI() {
 }
 
 char Game::getIndex(int x, int y) {
-    return (char)(((board[x][y]))->getXO()) ;
+    return (char)(((board[x][y]))->getType()) ;
 }
 
-XO Game::getIndexAsXO(int x, int y){
-	return (((board[x][y]))->getXO()) ;
+Type Game::getIndexAsMarkType(int x, int y){
+	return (((board[x][y]))->getType()) ;
 }
 
 bool Game::isWritten(int x, int y) {
@@ -212,7 +212,7 @@ bool Game::isWritten(int x, int y) {
 	else if ((y >= rowSize) || (y < 0)) {
 		return true ;
 	}
-    else if (((((board[x][y]))->getXO()) == X) || ((((board[x][y]))->getXO()) == O)) {
+    else if (((((board[x][y]))->getType()) == X) || ((((board[x][y]))->getType()) == O)) {
 		return true ;
 	}
     return false ;
@@ -244,7 +244,7 @@ bool Game::checkStarted() {
 void Game::checkWin() {
 	bool won = checkLocations() ;
 	if (won) {
-		winPlayer = idPlByXO(winningXO) ;
+		winPlayer = idPlayerByMarkType(winningType) ;
 		winPlayer->incWins() ;
 	}
 	winner = won ;
@@ -277,10 +277,10 @@ void Game::aiAction() {
 	unsigned middle = (rowSize/2) ;
 	Location* midpoint = new Location(center, middle) ;
 	
-	XO myxo = currentPlayer->getXO() ;
-	vector<Location>* thisPlSpots = SmartXO::getAllLoc(myxo) ;
-	XO oppxo = nextPlayer->getXO() ;
-	vector<Location>* oppPlSpots = SmartXO::getAllLoc(oppxo) ;
+	Type markType = currentPlayer->getType() ;
+	vector<Location>* spots = Mark::getAllLocations(markType) ;
+	Type opponentMarkType = nextPlayer->getType() ;
+	vector<Location>* oppPlSpots = Mark::getAllLocations(opponentMarkType) ;
 	
 	bool counterOpenMove = ((nextPlayer->isFirst()) && (nextPlayer->getTurns() == 1)) ;
 	Location* oppMove = (nextPlayer->getLastWritten()) ;
@@ -316,12 +316,12 @@ void Game::aiAction() {
 		}
 	}
 	//remaining code is decision making for the rest of the game
-	if ((thisPlSpots != nullptr) && (decisionMade == false)) { //WIN: if we have two in a row already this behavior fills in the last space
+	if ((spots != nullptr) && (decisionMade == false)) { //WIN: if we have two in a row already this behavior fills in the last space
 		Navigator *nav = new Navigator() ;
 		Navigator *searched = nullptr ;
-		for (vector<SmartXO*>::size_type i = 0 ; i < thisPlSpots->size() ; i++) {
+		for (vector<Mark*>::size_type i = 0 ; i < spots->size() ; i++) {
 			nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
-			searched = findSequence(thisPlSpots->at(i), nav, thisPlSpots, 1, 1) ; // we will search for a line of at any two of our X or Os in a row (arg 1 here really means 2 in a row - start at 0, add 1 if we find a second in line with it)
+			searched = findSequence(spots->at(i), nav, spots, 1, 1) ; // we will search for a line of at any two of our X or Os in a row (arg 1 here really means 2 in a row - start at 0, add 1 if we find a second in line with it)
 			if (searched->b == true) {
 				Location *locn = findIndex(searched->loc, searched->dir, 1) ;
 				if (locn != nullptr) { //it will be nullptr if it's already written as well
@@ -332,14 +332,14 @@ void Game::aiAction() {
 			}
 		}
 	}
-	if ((thisPlSpots != nullptr) && (decisionMade == false)) { //WIN:this behavior searches to find a location in between two of currentPlayer's X or O, and sets it to be written
+	if ((spots != nullptr) && (decisionMade == false)) { //WIN:this behavior searches to find a location in between two of currentPlayer's X or O, and sets it to be written
 		Navigator *nav = new Navigator() ;
 		Navigator *searched = nullptr ;
-		for (vector<SmartXO*>::size_type i = 0 ; i < thisPlSpots->size() ; i++) {
+		for (vector<Mark*>::size_type i = 0 ; i < spots->size() ; i++) {
 			nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
-			Location l = (thisPlSpots->at(i)) ;
+			Location l = (spots->at(i)) ;
 			if (((l.x == 0) || (l.x == (boardSize-1))) || ((l.y == 0) || (l.y == (rowSize-1)))) {
-				searched = findSequence(l, nav, thisPlSpots, (maxSize-1), (maxSize-1)) ;
+				searched = findSequence(l, nav, spots, (maxSize-1), (maxSize-1)) ;
 				if (searched->b == true) {
 					Location* locn = findIndex(searched->loc, reverse(searched->dir), 1) ;
 					if (locn != nullptr) {
@@ -362,7 +362,7 @@ void Game::aiAction() {
 	if ((oppPlSpots != nullptr) && (decisionMade == false)) { //BLOCK: if the opposing player has X or Os on opposite sides of the boards, we will set our next write to be in between
 		Navigator *nav = new Navigator() ;
 		Navigator *searched = nullptr ;
-		for (vector<SmartXO*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
+		for (vector<Mark*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
 			nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
 			Location l = (oppPlSpots->at(i)) ;
 			if (((l.x == 0) || (l.x == (boardSize-1))) || ((l.y == 0) || (l.y == (rowSize-1)))) {
@@ -385,7 +385,7 @@ void Game::aiAction() {
 		}
 	}
 	if (decisionMade == false) { //Opponent has opposite corners and we have center, we'll play an edge
-		for (vector<SmartXO*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
+		for (vector<Mark*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
 			if (isCorner(&(oppPlSpots->at(i)))) {
 				Location *corner = getOpposite(&(oppPlSpots->at(i))) ;
 				if (corner->equals(oppPlSpots)) {
@@ -424,7 +424,7 @@ void Game::aiAction() {
 	}
   
 	if (decisionMade == false) { //OPPOSITE CORNER: if the opponent is in the opposite corner, we block
-		for (vector<SmartXO*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
+		for (vector<Mark*>::size_type i = 0 ; i < oppPlSpots->size() ; i++) {
 			if (isCorner(&(oppPlSpots->at(i)))) {
 				Location *loc = getOpposite(&(oppPlSpots->at(i))) ;
 				if (!(isWritten(loc->x, loc->y))) {
@@ -573,7 +573,7 @@ void Game::gameEvent() {
 		gameCode = 1 ;
 	}
 	else if (!(isWritten(p->x, p->y))) {
-		writeIndex(p->x, p->y, currentPlayer->getXO()) ;
+		writeIndex(p->x, p->y, currentPlayer->getType()) ;
 		currentPlayer->incTurns() ;
 		turns++ ;
 		currentPlayer->setLastWritten(p->x, p->y) ;
@@ -591,8 +591,8 @@ void Game::gameEvent() {
 
 
 
-void Game::writeIndex(int x, int y, XO inp) {
-    *(board[x][y]) = inp ;
+void Game::writeIndex(int x, int y, Type newMarkType) {
+    *(board[x][y]) = newMarkType ;
 }
 
 Location* Game::findIndex(Location* loc, direction dir, int offset) {
@@ -850,10 +850,10 @@ bool Game::openSequence(vector<Location>* thisPlSpots, vector<Location>* oppPlSp
 	return false ;
 }
 
-void Game::writeAllIndex(XO xorO) {
+void Game::writeAllIndex(Type type) {
 	for (int i = 0 ; i < boardSize; i++) {
         for (int j = 0 ; j < rowSize; j++) {
-			writeIndex(i, j, xorO) ;
+			writeIndex(i, j, type) ;
 		}
 	}
 }
@@ -863,7 +863,7 @@ void Game::resetGame() {
 	setStarted(false) ; //will set gameOver state as well
 	winOrDraw = winner ;
 	winner = false ;
-	winningXO = nullxo ;
+	winningType = nullMark ;
 	gameCode = 3 ;
 	writeAllIndex(blank) ;
 	lastGameLog = new stringstream() ;
@@ -920,35 +920,35 @@ void Game::resetGame() {
 bool Game::checkLocations() {
 	bool ret = false ;
     for (int i = 0 ; i < maxSize ; i++) {
-		if (((board[i][0])->getXO()) != blank) {
-			XO xo = (board[i][0])->getXO() ;
-			if ((SmartXO::getAllLoc(xo)) != nullptr) {
+		if (((board[i][0])->getType()) != blank) {
+			Type type = (board[i][0])->getType() ;
+			if ((Mark::getAllLocations(type)) != nullptr) {
 				Location here = (board[i][0])->getLocation() ;
-				vector<Location> *elsewhere = SmartXO::getAllLoc(xo) ;
+				vector<Location> *elsewhere = Mark::getAllLocations(type) ;
 				Navigator *nav = new Navigator() ;
 				nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
 				Navigator *searched = findSequence(here, nav, elsewhere, 1, (maxSize-1)) ;
 				ret = searched->b ; //we will search across the array (maxsize - 1)
 				if (ret == true) {
-					winningXO = xo ;
+					winningType = type ;
 					return ret ;
 				}
 			}
 		}
     }
 	for (int i = 0 ; i < maxSize ; i++) {
-		if (((board[0][i])->getXO()) != blank) {
-			XO xo = (board[0][i])->getXO() ;
-			if ((SmartXO::getAllLoc(xo)) != nullptr) {
+		if (((board[0][i])->getType()) != blank) {
+			Type type = (board[0][i])->getType() ;
+			if ((Mark::getAllLocations(type)) != nullptr) {
 				Location here = (board[0][i])->getLocation() ;
-				XO xo_here = (board[0][i])->getXO() ;
-				vector<Location> *elsewhere = SmartXO::getAllLoc(xo) ;
+				Type markHere = (board[0][i])->getType() ;
+				vector<Location> *elsewhere = Mark::getAllLocations(type) ;
 				Navigator *nav = new Navigator() ;
 				nav->b = false ; nav->dir = direction::null ; nav->loc = nullptr ; nav->lengthSearched = 0 ;
 				Navigator *searched = findSequence(here, nav, elsewhere, 1, (maxSize-1)) ;
 				ret = searched->b ; //we will search across the array (maxsize - 1)
 				if (ret == true) {
-					winningXO = xo_here ;
+					winningType = markHere ;
 					return ret ;
 				}
 			}

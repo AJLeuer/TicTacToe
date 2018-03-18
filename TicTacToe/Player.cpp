@@ -10,7 +10,7 @@
 
 Player::Player() {
 	this->name = " " ;
-	this->xorO = XO::nullxo ;
+	this->xorO = Type::nullMark ;
 	this->human = true ;
 	this->nextSpace = nullptr  ;
 	this->lastWritten = nullptr ;
@@ -18,7 +18,7 @@ Player::Player() {
 
 Player::Player(string name) {
 	this->name = name ;
-	this->xorO = XO::nullxo ;
+	this->xorO = Type::nullMark ;
 	this->human = true ;
 	this->nextSpace = nullptr  ;
 	this->lastWritten = nullptr ;
@@ -26,13 +26,13 @@ Player::Player(string name) {
 
 Player::Player(string name, bool human) {
 	this->name = name ;
-	this->xorO = XO::nullxo ;
+	this->xorO = Type::nullMark ;
 	this->human = human ;
 	this->nextSpace = nullptr  ;
 	this->lastWritten = nullptr ;
 }
 
-Player::Player(string name, XO xOrO, bool human) {
+Player::Player(string name, Type xOrO, bool human) {
 	this->name = name ;
 	this->xorO = xOrO ;
 	this->human = human ;
@@ -40,12 +40,12 @@ Player::Player(string name, XO xOrO, bool human) {
 	this->lastWritten = nullptr ;
 }
 
-void Player::setXO(XO Xo) {
+void Player::setXO(Type Xo) {
 	this->xorO = Xo ;
 }
 
 char Player::getXOChar() {
-	return SmartXO::getXOChar(xorO) ;
+	return Mark::getMarkType(xorO) ;
 }
 
 void Player::setName(string name)  {
